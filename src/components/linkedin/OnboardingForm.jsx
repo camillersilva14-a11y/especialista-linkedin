@@ -10,6 +10,9 @@ import { base44 } from "@/api/base44Client";
 
 export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, isAnalyzing }) {
     const [formData, setFormData] = useState({
+        fullName: "",
+        email: "",
+        whatsapp: "",
         cargoAlvo: "",
         areaAtuacao: "",
         vagaLink: ""
@@ -53,6 +56,18 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
             setError("Por favor, faça upload do seu currículo");
             return;
         }
+        if (!formData.fullName.trim()) {
+            setError("Por favor, informe seu nome completo");
+            return;
+        }
+        if (!formData.email.trim() || !formData.email.includes('@')) {
+            setError("Por favor, informe um email válido");
+            return;
+        }
+        if (!formData.whatsapp.trim()) {
+            setError("Por favor, informe seu WhatsApp");
+            return;
+        }
         if (!formData.cargoAlvo.trim()) {
             setError("Por favor, informe seu cargo alvo");
             return;
@@ -65,6 +80,19 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
         onAnalysisStart();
 
         try {
+            // Salvar Lead
+            try {
+                await base44.entities.Lead.create({
+                    full_name: formData.fullName,
+                    email: formData.email,
+                    whatsapp: formData.whatsapp,
+                    status: 'novo'
+                });
+            } catch (leadError) {
+                console.error("Erro ao salvar lead:", leadError);
+                // Não interrompe o fluxo principal se falhar o salvamento do lead
+            }
+
             // Upload do arquivo
             const { file_url } = await base44.integrations.Core.UploadFile({ file: cvFile });
 
@@ -251,10 +279,55 @@ IMPORTANTE: Retorne EXATAMENTE no formato JSON especificado, sem texto adicional
                                 </label>
                             </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Nome Completo */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="full-name" className="text-base font-semibold text-gray-800">
+                                        2. Nome Completo *
+                                    </Label>
+                                    <Input
+                                        id="full-name"
+                                        placeholder="Seu nome"
+                                        value={formData.fullName}
+                                        onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                                        className="text-base border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                                    />
+                                </div>
+
+                                {/* WhatsApp */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="whatsapp" className="text-base font-semibold text-gray-800">
+                                        3. WhatsApp *
+                                    </Label>
+                                    <Input
+                                        id="whatsapp"
+                                        placeholder="(00) 00000-0000"
+                                        value={formData.whatsapp}
+                                        onChange={(e) => setFormData({...formData, whatsapp: e.target.value})}
+                                        className="text-base border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Email */}
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-base font-semibold text-gray-800">
+                                    4. E-mail *
+                                </Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="seu@email.com"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                    className="text-base border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                                />
+                            </div>
+
                             {/* Cargo Alvo */}
                             <div className="space-y-2">
                                 <Label htmlFor="cargo-alvo" className="text-base font-semibold text-gray-800">
-                                    2. Cargo Alvo *
+                                    5. Cargo Alvo *
                                 </Label>
                                 <Input
                                     id="cargo-alvo"
@@ -268,7 +341,7 @@ IMPORTANTE: Retorne EXATAMENTE no formato JSON especificado, sem texto adicional
                             {/* Área de Atuação */}
                             <div className="space-y-2">
                                 <Label htmlFor="area-atuacao" className="text-base font-semibold text-gray-800">
-                                    3. Área de Atuação no Mercado Farmacêutico *
+                                    6. Área de Atuação no Mercado Farmacêutico *
                                 </Label>
                                 <Select 
                                     value={formData.areaAtuacao} 
