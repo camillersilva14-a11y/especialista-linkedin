@@ -80,7 +80,7 @@ export default function LinkedInOptimizer() {
 
             {/* Footer */}
             <footer className="bg-gray-900 text-white mt-20">
-                <div className="bg-slate-400 mx-auto px-4 py-12 max-w-7xl sm:px-6 lg:px-8">
+                <div className="mx-auto px-4 py-12 max-w-7xl sm:px-6 lg:px-8">
                     <div className="grid md:grid-cols-3 gap-8">
                         <div>
                             <h3 className="text-lg font-semibold mb-4">
