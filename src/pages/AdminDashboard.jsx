@@ -12,9 +12,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, ShieldAlert, Phone, Mail, User } from "lucide-react";
+import { Loader2, Search, ShieldAlert, Phone, Mail, User, Trash2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { format } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminDashboard() {
   const [leads, setLeads] = useState([]);
@@ -55,6 +73,24 @@ export default function AdminDashboard() {
       lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lead.whatsapp?.includes(searchTerm)
   );
+
+  const handleStatusChange = async (leadId, newStatus) => {
+    try {
+      await base44.entities.Lead.update(leadId, { status: newStatus });
+      setLeads(leads.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
+    } catch (err) {
+      console.error("Erro ao atualizar status:", err);
+    }
+  };
+
+  const handleDelete = async (leadId) => {
+    try {
+      await base44.entities.Lead.delete(leadId);
+      setLeads(leads.filter(l => l.id !== leadId));
+    } catch (err) {
+      console.error("Erro ao excluir lead:", err);
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -133,7 +169,7 @@ export default function AdminDashboard() {
                     <TableHead>Nome Completo</TableHead>
                     <TableHead>Contatos</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>ID</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -168,12 +204,43 @@ export default function AdminDashboard() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(lead.status)}>
-                            {lead.status || "novo"}
-                          </Badge>
+                          <Select
+                            defaultValue={lead.status || "novo"}
+                            onValueChange={(value) => handleStatusChange(lead.id, value)}
+                          >
+                            <SelectTrigger className="w-[140px] h-8">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="novo">Novo</SelectItem>
+                              <SelectItem value="contatado">Contatado</SelectItem>
+                              <SelectItem value="convertido">Convertido</SelectItem>
+                              <SelectItem value="arquivado">Arquivado</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </TableCell>
-                        <TableCell className="font-mono text-xs text-gray-400">
-                          {lead.id.slice(0, 8)}...
+                        <TableCell className="text-right">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir Lead?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta ação não pode ser desfeita. O lead <b>{lead.full_name}</b> será permanentemente removido.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(lead.id)} className="bg-red-600 hover:bg-red-700">
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </TableCell>
                       </TableRow>
                     ))
