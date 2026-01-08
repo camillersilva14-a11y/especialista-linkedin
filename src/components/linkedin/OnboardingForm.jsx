@@ -338,7 +338,7 @@ IMPORTANTE: Retorne EXATAMENTE no formato JSON especificado, sem texto adicional
                                     <>
                                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                                         <span className="whitespace-normal text-center">
-                                            Estamos analisando o seu currículo para elaborar o texto do seu LinkedIn irresistível...
+                                            estamos analisando o seu currículo para elaborar o texto do seu LinkedIn irresistivel
                                         </span>
                                     </>
                                 ) : (
