@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Loader2 } from "lucide-react";
 import HeroSection from "../components/linkedin/HeroSection";
 import HowItWorks from "../components/linkedin/HowItWorks";
 import OnboardingForm from "../components/linkedin/OnboardingForm";
@@ -77,6 +79,26 @@ export default function LinkedInOptimizer() {
                     />
                 </div>
       }
+
+            {/* Analysis Loading Dialog */}
+            <Dialog open={isAnalyzing} onOpenChange={() => {}}>
+                <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+                    <DialogHeader>
+                        <DialogTitle className="flex flex-col items-center gap-4 text-center pt-4">
+                            <div className="p-4 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full shadow-inner">
+                                <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+                            </div>
+                            <span className="text-xl font-bold text-gray-900">
+                                Seu currículo está em análise
+                            </span>
+                        </DialogTitle>
+                        <DialogDescription className="text-center text-base text-gray-600 pt-2 pb-4">
+                            Nossa IA está lendo seu perfil e preparando recomendações estratégicas para o mercado farmacêutico. <br/>
+                            <span className="font-medium text-blue-600">Isso leva apenas alguns segundos...</span>
+                        </DialogDescription>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
 
             {/* Footer */}
             <footer className="bg-gray-900 text-white mt-20">
