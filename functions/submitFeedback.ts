@@ -22,8 +22,8 @@ Deno.serve(async (req) => {
             comments: comments ? String(comments).trim() : undefined
         };
 
-        // Use service role to bypass RLS and ensure submission works
-        const result = await base44.asServiceRole.entities.Feedback.create(feedbackData);
+        // Use standard client as the entity has public create RLS
+        const result = await base44.entities.Feedback.create(feedbackData);
 
         return Response.json(result);
     } catch (error) {
