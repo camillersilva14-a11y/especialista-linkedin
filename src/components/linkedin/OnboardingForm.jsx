@@ -10,9 +10,6 @@ import { base44 } from "@/api/base44Client";
 
 export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, isAnalyzing }) {
     const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        whatsapp: "",
         cargoAlvo: "",
         areaAtuacao: "",
         vagaLink: ""
@@ -52,18 +49,6 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
         setError("");
 
         // Validações
-        if (!formData.name.trim()) {
-            setError("Por favor, informe seu nome completo");
-            return;
-        }
-        if (!formData.email.trim()) {
-            setError("Por favor, informe seu e-mail");
-            return;
-        }
-        if (!formData.whatsapp.trim()) {
-            setError("Por favor, informe seu WhatsApp");
-            return;
-        }
         if (!cvFile) {
             setError("Por favor, faça upload do seu currículo");
             return;
@@ -80,13 +65,17 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
         onAnalysisStart();
 
         try {
-            // Salvar Lead
-            await base44.entities.Lead.create({
-                full_name: formData.name,
-                email: formData.email,
-                whatsapp: formData.whatsapp,
-                status: 'novo'
-            });
+            const user = await base44.auth.me();
+
+            // Salvar Lead usando dados do usuário logado
+            if (user) {
+                await base44.entities.Lead.create({
+                    full_name: user.full_name || "Usuário",
+                    email: user.email,
+                    whatsapp: user.whatsapp || "Não informado",
+                    status: 'novo'
+                });
+            }
 
             // Upload do arquivo
             const { file_url } = await base44.integrations.Core.UploadFile({ file: cvFile });
@@ -232,7 +221,6 @@ IMPORTANTE: Retorne EXATAMENTE no formato JSON especificado, sem texto adicional
                                         Para começar, preciso dos seguintes dados:
                                     </p>
                                     <ul className="list-disc list-inside space-y-1 ml-2">
-                                        <li>Seus dados de contato</li>
                                         <li>Seu currículo em PDF ou Word</li>
                                         <li>O cargo que você deseja conquistar</li>
                                         <li>Sua área de atuação no mercado farmacêutico</li>
@@ -242,54 +230,10 @@ IMPORTANTE: Retorne EXATAMENTE no formato JSON especificado, sem texto adicional
                                 </div>
 
                                 <form onSubmit={handleSubmit} className="space-y-6">
-                                {/* Dados Pessoais */}
-                                <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name" className="text-base font-semibold text-gray-800">
-                                        Nome Completo *
-                                    </Label>
-                                    <Input
-                                        id="name"
-                                        placeholder="Seu nome completo"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                        className="text-base border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email" className="text-base font-semibold text-gray-800">
-                                            E-mail *
-                                        </Label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            placeholder="seu@email.com"
-                                            value={formData.email}
-                                            onChange={(e) => setFormData({...formData, email: e.target.value})}
-                                            className="text-base border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="whatsapp" className="text-base font-semibold text-gray-800">
-                                            WhatsApp / Celular *
-                                        </Label>
-                                        <Input
-                                            id="whatsapp"
-                                            placeholder="(11) 99999-9999"
-                                            value={formData.whatsapp}
-                                            onChange={(e) => setFormData({...formData, whatsapp: e.target.value})}
-                                            className="text-base border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                                        />
-                                    </div>
-                                </div>
-                                </div>
-
                                 {/* Upload CV */}
                                 <div className="space-y-2">
                                 <Label htmlFor="cv-upload" className="text-base font-semibold text-gray-800">
-                                    Upload do Currículo *
+                                    1. Upload do Currículo *
                                 </Label>
                                 <label 
                                     htmlFor="cv-upload"
