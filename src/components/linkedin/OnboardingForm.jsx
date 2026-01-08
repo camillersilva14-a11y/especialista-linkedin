@@ -73,14 +73,13 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
 
             const user = await base44.auth.me();
 
-            // Salvar Lead usando dados do usuário logado
+            // Salvar Lead usando dados do usuário logado via backend function
             if (user) {
                 try {
-                    await base44.entities.Lead.create({
-                        full_name: user.full_name || "Usuário",
+                    await base44.functions.invoke('createLead', {
+                        full_name: user.full_name,
                         email: user.email,
-                        whatsapp: user.whatsapp || "Não informado",
-                        status: 'novo'
+                        whatsapp: user.whatsapp
                     });
                 } catch (leadError) {
                     console.error("Erro ao salvar lead:", leadError);
