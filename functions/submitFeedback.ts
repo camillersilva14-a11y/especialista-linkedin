@@ -22,11 +22,16 @@ Deno.serve(async (req) => {
             comments: comments ? String(comments).trim() : undefined
         };
 
+        console.log('Attempting to create feedback with data:', JSON.stringify(feedbackData));
+        
         // Use standard client as the entity has public create RLS
         const result = await base44.entities.Feedback.create(feedbackData);
+        
+        console.log('Feedback created successfully:', result);
 
         return Response.json(result);
     } catch (error) {
+        console.error('Error details:', JSON.stringify(error, null, 2));
         console.error('Feedback submission error:', error);
         return Response.json({ error: error.message || 'Internal server error' }, { status: 500 });
     }
