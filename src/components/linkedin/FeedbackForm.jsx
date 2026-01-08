@@ -25,16 +25,13 @@ export default function FeedbackForm({ cargoAlvo, areaAtuacao, onFeedbackSubmitt
         setIsSubmitting(true);
         
         try {
-            // Prepare clean payload removing empty fields
-            const feedbackData = {
-                rating: Number(rating)
-            };
-
-            if (cargoAlvo && cargoAlvo.trim()) feedbackData.cargo_alvo = cargoAlvo.trim();
-            if (areaAtuacao && areaAtuacao.trim()) feedbackData.area_atuacao = areaAtuacao.trim();
-            if (comments && comments.trim()) feedbackData.comments = comments.trim();
-
-            await base44.entities.Feedback.create(feedbackData);
+            // Use backend function for reliable submission
+            await base44.functions.invoke('submitFeedback', {
+                rating: Number(rating),
+                cargo_alvo: cargoAlvo,
+                area_atuacao: areaAtuacao,
+                comments: comments
+            });
             
             setIsSubmitted(true);
             if (onFeedbackSubmitted) {
