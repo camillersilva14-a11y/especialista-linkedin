@@ -6,7 +6,7 @@ import { Star, MessageSquare, CheckCircle2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
 
-export default function FeedbackForm({ cargoAlvo, areaAtuacao }) {
+export default function FeedbackForm({ cargoAlvo, areaAtuacao, onFeedbackSubmitted }) {
     const [rating, setRating] = useState(0);
     const [hoveredRating, setHoveredRating] = useState(0);
     const [comments, setComments] = useState("");
@@ -31,6 +31,9 @@ export default function FeedbackForm({ cargoAlvo, areaAtuacao }) {
             });
             
             setIsSubmitted(true);
+            if (onFeedbackSubmitted) {
+                onFeedbackSubmitted();
+            }
         } catch (error) {
             console.error('Error submitting feedback:', error);
         } finally {

@@ -3,12 +3,37 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, Copy, TrendingUp, Lightbulb, Key, FileText, Award, Info, Printer } from "lucide-react";
+import { CheckCircle2, Copy, TrendingUp, Lightbulb, Key, FileText, Award, Info, Printer, Lock } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import FeedbackForm from "./FeedbackForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
     const [copiedSection, setCopiedSection] = useState(null);
+    const [hasRated, setHasRated] = useState(false);
+    const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+    const [pendingAction, setPendingAction] = useState(null);
+
+    const handleAction = (action) => {
+        if (hasRated) {
+            action();
+        } else {
+            setPendingAction(() => action);
+            setShowFeedbackModal(true);
+        }
+    };
+
+    const handleFeedbackSubmitted = () => {
+        setHasRated(true);
+        setShowFeedbackModal(false);
+        if (pendingAction) {
+            // Execute the pending action after a short delay to allow the modal to close
+            setTimeout(() => {
+                pendingAction();
+                setPendingAction(null);
+            }, 500);
+        }
+    };
 
     const copyToClipboard = (text, section) => {
         navigator.clipboard.writeText(text);
@@ -418,8 +443,29 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
 
                 {/* Feedback Form */}
                 <div className="no-print">
-                    <FeedbackForm cargoAlvo={cargoAlvo} areaAtuacao={areaAtuacao} />
+                    <FeedbackForm 
+                        cargoAlvo={cargoAlvo} 
+                        areaAtuacao={areaAtuacao} 
+                        onFeedbackSubmitted={() => setHasRated(true)}
+                    />
                 </div>
+
+                {/* Feedback Modal */}
+                <Dialog open={showFeedbackModal} onOpenChange={setShowFeedbackModal}>
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Sua opinião é fundamental! ⭐</DialogTitle>
+                            <DialogDescription>
+                                Para liberar o download e impressão do seu relatório, por favor, avalie nossa ferramenta. É rapidinho!
+                            </DialogDescription>
+                        </DialogHeader>
+                        <FeedbackForm 
+                            cargoAlvo={cargoAlvo} 
+                            areaAtuacao={areaAtuacao} 
+                            onFeedbackSubmitted={handleFeedbackSubmitted}
+                        />
+                    </DialogContent>
+                </Dialog>
 
                 {/* CTA Final */}
                 <div className="mt-12 text-center">
@@ -443,17 +489,17 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                                 <Button 
                                     size="lg"
                                     className="bg-white text-blue-600 hover:bg-blue-50 gap-2 no-print shadow-md font-semibold"
-                                    onClick={() => window.print()}
+                                    onClick={() => handleAction(() => window.print())}
                                 >
-                                    <Printer className="w-5 h-5" />
+                                    {hasRated ? <Printer className="w-5 h-5" /> : <Lock className="w-4 h-4" />}
                                     Imprimir / Salvar PDF
                                 </Button>
                                 <Button 
                                     size="lg"
                                     className="bg-white text-blue-600 hover:bg-blue-50 gap-2 no-print shadow-md font-semibold"
-                                    onClick={downloadAsWord}
+                                    onClick={() => handleAction(downloadAsWord)}
                                 >
-                                    <FileText className="w-5 h-5" />
+                                    {hasRated ? <FileText className="w-5 h-5" /> : <Lock className="w-4 h-4" />}
                                     Baixar em Word
                                 </Button>
                             </div>
