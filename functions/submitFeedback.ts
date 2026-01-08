@@ -24,8 +24,8 @@ Deno.serve(async (req) => {
 
         console.log('Attempting to create feedback with data:', JSON.stringify(feedbackData));
         
-        // Use AppFeedback entity
-        const result = await base44.entities.AppFeedback.create(feedbackData);
+        // Use AppFeedback entity with service role
+        const result = await base44.asServiceRole.entities.AppFeedback.create(feedbackData);
         
         console.log('Feedback created successfully:', result);
 
