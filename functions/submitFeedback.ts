@@ -24,8 +24,8 @@ Deno.serve(async (req) => {
 
         console.log('Attempting to create feedback with data:', JSON.stringify(feedbackData));
         
-        // Use standard client as the entity has public create RLS
-        const result = await base44.entities.Feedback.create(feedbackData);
+        // Use UserFeedback entity
+        const result = await base44.entities.UserFeedback.create(feedbackData);
         
         console.log('Feedback created successfully:', result);
 
