@@ -89,7 +89,17 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
             }
 
             // Upload do arquivo
-            const { file_url } = await base44.integrations.Core.UploadFile({ file: cvFile });
+            let file_url;
+            try {
+                const uploadResult = await base44.integrations.Core.UploadFile({ file: cvFile });
+                file_url = uploadResult.file_url;
+                if (!file_url) {
+                    throw new Error("Falha ao obter URL do arquivo.");
+                }
+            } catch (uploadError) {
+                console.error("Erro no upload:", uploadError);
+                throw new Error("Erro ao enviar o arquivo. Por favor, tente novamente ou verifique o arquivo.");
+            }
 
             // Prompt para análise do perfil
             const prompt = `Você é um consultor sênior de carreira e especialista no algoritmo do LinkedIn, especializado no mercado farmacêutico brasileiro.
