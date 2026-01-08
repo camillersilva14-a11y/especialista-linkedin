@@ -65,16 +65,27 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
         onAnalysisStart();
 
         try {
+            const isAuthenticated = await base44.auth.isAuthenticated();
+            if (!isAuthenticated) {
+                await base44.auth.redirectToLogin();
+                return;
+            }
+
             const user = await base44.auth.me();
 
             // Salvar Lead usando dados do usuário logado
             if (user) {
-                await base44.entities.Lead.create({
-                    full_name: user.full_name || "Usuário",
-                    email: user.email,
-                    whatsapp: user.whatsapp || "Não informado",
-                    status: 'novo'
-                });
+                try {
+                    await base44.entities.Lead.create({
+                        full_name: user.full_name || "Usuário",
+                        email: user.email,
+                        whatsapp: user.whatsapp || "Não informado",
+                        status: 'novo'
+                    });
+                } catch (leadError) {
+                    console.error("Erro ao salvar lead:", leadError);
+                    // Não interrompe o fluxo se falhar ao salvar o lead, mas loga o erro
+                }
             }
 
             // Upload do arquivo
@@ -186,7 +197,7 @@ IMPORTANTE: Retorne EXATAMENTE no formato JSON especificado, sem texto adicional
 
             } catch (err) {
             console.error('Erro na análise:', err);
-            setError("Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.");
+            setError(err.message || "Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.");
             onAnalysisComplete(null);
         }
     };
