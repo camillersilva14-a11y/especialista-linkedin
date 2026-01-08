@@ -12,9 +12,11 @@ export default function FeedbackForm({ cargoAlvo, areaAtuacao, onFeedbackSubmitt
     const [comments, setComments] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [error, setError] = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
         
         if (rating === 0) {
             return;
@@ -36,6 +38,7 @@ export default function FeedbackForm({ cargoAlvo, areaAtuacao, onFeedbackSubmitt
             }
         } catch (error) {
             console.error('Error submitting feedback:', error);
+            setError("Ocorreu um erro ao enviar seu feedback. Por favor, tente novamente.");
         } finally {
             setIsSubmitting(false);
         }
@@ -138,6 +141,11 @@ export default function FeedbackForm({ cargoAlvo, areaAtuacao, onFeedbackSubmitt
                                 className="resize-none"
                             />
                         </div>
+
+                        {/* Error Message */}
+                        {error && (
+                            <p className="text-sm text-red-600 text-center">{error}</p>
+                        )}
 
                         {/* Submit Button */}
                         <Button
