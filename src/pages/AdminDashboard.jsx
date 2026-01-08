@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, ShieldAlert, Phone, Mail, User, Trash2 } from "lucide-react";
+import { Loader2, Search, ShieldAlert, Phone, Mail, User, Trash2, Download } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { format } from "date-fns";
 import {
@@ -102,6 +102,34 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleExportExcel = () => {
+    const headers = ["Data", "Nome", "Email", "WhatsApp", "Status"];
+    
+    const csvContent = [
+      headers.join(","),
+      ...leads.map(lead => {
+        const date = lead.created_date ? new Date(lead.created_date).toLocaleString('pt-BR') : "";
+        const escape = (val) => `"${String(val || "").replace(/"/g, '""')}"`;
+        return [
+          escape(date),
+          escape(lead.full_name),
+          escape(lead.email),
+          escape(lead.whatsapp),
+          escape(lead.status)
+        ].join(",");
+      })
+    ].join("\n");
+
+    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `leads_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
@@ -139,6 +167,10 @@ export default function AdminDashboard() {
             <div className="text-sm text-gray-600 mr-2">
                 Olá, <span className="font-semibold">{currentUser?.full_name || 'Admin'}</span>
             </div>
+            <Button variant="outline" onClick={handleExportExcel} className="gap-2">
+              <Download className="h-4 w-4" />
+              Exportar Excel
+            </Button>
             <Button variant="outline" onClick={checkUserAndFetchLeads}>
               Atualizar Lista
             </Button>

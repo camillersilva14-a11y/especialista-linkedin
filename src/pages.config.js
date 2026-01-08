@@ -1,11 +1,11 @@
-import LinkedInOptimizer from './pages/LinkedInOptimizer';
 import AdminDashboard from './pages/AdminDashboard';
+import LinkedInOptimizer from './pages/LinkedInOptimizer';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "LinkedInOptimizer": LinkedInOptimizer,
     "AdminDashboard": AdminDashboard,
+    "LinkedInOptimizer": LinkedInOptimizer,
 }
 
 export const pagesConfig = {
