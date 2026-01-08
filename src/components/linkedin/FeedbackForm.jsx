@@ -25,12 +25,17 @@ export default function FeedbackForm({ cargoAlvo, areaAtuacao, onFeedbackSubmitt
         setIsSubmitting(true);
         
         try {
-            await base44.entities.Feedback.create({
+            const feedbackData = {
                 rating,
-                comments: comments.trim() || null,
-                cargo_alvo: cargoAlvo,
-                area_atuacao: areaAtuacao
-            });
+                cargo_alvo: cargoAlvo || "",
+                area_atuacao: areaAtuacao || ""
+            };
+
+            if (comments && comments.trim().length > 0) {
+                feedbackData.comments = comments.trim();
+            }
+
+            await base44.entities.Feedback.create(feedbackData);
             
             setIsSubmitted(true);
             if (onFeedbackSubmitted) {
