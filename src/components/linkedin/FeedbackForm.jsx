@@ -25,15 +25,14 @@ export default function FeedbackForm({ cargoAlvo, areaAtuacao, onFeedbackSubmitt
         setIsSubmitting(true);
         
         try {
+            // Prepare clean payload removing empty fields
             const feedbackData = {
-                rating,
-                cargo_alvo: cargoAlvo || "",
-                area_atuacao: areaAtuacao || ""
+                rating: Number(rating)
             };
 
-            if (comments && comments.trim().length > 0) {
-                feedbackData.comments = comments.trim();
-            }
+            if (cargoAlvo && cargoAlvo.trim()) feedbackData.cargo_alvo = cargoAlvo.trim();
+            if (areaAtuacao && areaAtuacao.trim()) feedbackData.area_atuacao = areaAtuacao.trim();
+            if (comments && comments.trim()) feedbackData.comments = comments.trim();
 
             await base44.entities.Feedback.create(feedbackData);
             
@@ -43,7 +42,8 @@ export default function FeedbackForm({ cargoAlvo, areaAtuacao, onFeedbackSubmitt
             }
         } catch (error) {
             console.error('Error submitting feedback:', error);
-            setError("Ocorreu um erro ao enviar seu feedback. Por favor, tente novamente.");
+            // Show specific error message if available, otherwise generic
+            setError(error.message || "Ocorreu um erro ao enviar seu feedback. Por favor, tente novamente.");
         } finally {
             setIsSubmitting(false);
         }
