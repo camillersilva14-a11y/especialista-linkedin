@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import HeroSection from "../components/linkedin/HeroSection";
 import HowItWorks from "../components/linkedin/HowItWorks";
@@ -18,12 +17,14 @@ export default function LinkedInOptimizer() {
     setIsAnalyzing(false);
 
     // Scroll suave até os resultados
-    setTimeout(() => {
-      document.getElementById('results-section')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }, 100);
+    if (results) {
+      setTimeout(() => {
+        document.getElementById('results-section')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 100);
+    }
   };
 
   useEffect(() => {
@@ -107,25 +108,27 @@ export default function LinkedInOptimizer() {
                 </div>
       }
 
-            {/* Analysis Loading Dialog */}
-            <Dialog open={isAnalyzing} onOpenChange={() => {}}>
-                <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
-                    <DialogHeader>
-                        <DialogTitle className="flex flex-col items-center gap-4 text-center pt-4">
+            {/* Custom Analysis Loading Popup - implemented manually to ensure visibility */}
+            {isAnalyzing && (
+                <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
+                        <div className="flex flex-col items-center text-center space-y-4">
                             <div className="p-4 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full shadow-inner">
                                 <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
                             </div>
-                            <span className="text-xl font-bold text-gray-900">
+                            <h3 className="text-xl font-bold text-gray-900">
                                 Estamos avaliando o seu currículo
-                            </span>
-                        </DialogTitle>
-                        <DialogDescription className="text-center text-base text-gray-600 pt-2 pb-4">
-                            Nossa IA está lendo seu perfil e preparando recomendações estratégicas para o mercado farmacêutico. <br/>
-                            <span className="font-medium text-blue-600">Isso leva apenas alguns segundos...</span>
-                        </DialogDescription>
-                    </DialogHeader>
-                </DialogContent>
-            </Dialog>
+                            </h3>
+                            <p className="text-base text-gray-600">
+                                Nossa IA está lendo seu perfil e preparando recomendações estratégicas para o mercado farmacêutico.
+                            </p>
+                            <div className="bg-blue-50 text-blue-800 text-sm py-2 px-4 rounded-full font-medium">
+                                Isso leva apenas alguns segundos...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Footer */}
             <footer className="bg-gray-900 text-white mt-20">
