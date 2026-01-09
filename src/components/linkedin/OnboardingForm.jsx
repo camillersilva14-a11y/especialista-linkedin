@@ -207,8 +207,10 @@ IMPORTANTE: Retorne EXATAMENTE no formato JSON especificado, sem texto adicional
 
             onAnalysisComplete(results, formData);
 
-            } catch (err) {
+        } catch (err) {
             console.error('Erro na análise:', err);
+            // Garante que o loading fique visível por pelo menos 1.5s antes de mostrar o erro, para o usuário ver que tentou
+            await new Promise(resolve => setTimeout(resolve, 1500));
             setError(err.message || "Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.");
             onAnalysisComplete(null);
         }

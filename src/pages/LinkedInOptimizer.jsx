@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 // Dialog removed to use custom overlay
 import { Loader2 } from "lucide-react";
 import HeroSection from "../components/linkedin/HeroSection";
@@ -139,8 +140,8 @@ export default function LinkedInOptimizer() {
                     </div>
                 </div>
             </footer>
-            {/* Analysis Loading Popup - Custom Overlay - Moved to end of file for stacking context */}
-            {isAnalyzing && (
+            {/* Analysis Loading Popup - Portal to Body */}
+            {isAnalyzing && createPortal(
                 <div className="fixed inset-0 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999 }}>
                     <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300 relative z-50">
                         <div className="flex flex-col items-center text-center space-y-4">
@@ -158,7 +159,8 @@ export default function LinkedInOptimizer() {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>);
 
