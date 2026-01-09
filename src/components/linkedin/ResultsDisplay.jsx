@@ -11,29 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
     const [copiedSection, setCopiedSection] = useState(null);
     const [hasRated, setHasRated] = useState(false);
-    const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-    const [pendingAction, setPendingAction] = useState(null);
-
-    const handleAction = (action) => {
-        if (hasRated) {
-            action();
-        } else {
-            setPendingAction(() => action);
-            setShowFeedbackModal(true);
-        }
-    };
-
-    const handleFeedbackSubmitted = () => {
-        setHasRated(true);
-        setShowFeedbackModal(false);
-        if (pendingAction) {
-            // Execute the pending action after a short delay to allow the modal to close
-            setTimeout(() => {
-                pendingAction();
-                setPendingAction(null);
-            }, 500);
-        }
-    };
+    // Feedback logic removed as per request to remove obligatoriness
+    const [showFeedbackModal, setShowFeedbackModal] = useState(false); // Kept state to minimize changes impact if referenced elsewhere, though effectively unused for blocking now.
 
     const copyToClipboard = (text, section) => {
         navigator.clipboard.writeText(text);
@@ -450,22 +429,7 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                     />
                 </div>
 
-                {/* Feedback Modal */}
-                <Dialog open={showFeedbackModal} onOpenChange={setShowFeedbackModal}>
-                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle>Sua opinião é fundamental! ⭐</DialogTitle>
-                            <DialogDescription>
-                                Para liberar o download e impressão do seu relatório, por favor, avalie nossa ferramenta. É rapidinho!
-                            </DialogDescription>
-                        </DialogHeader>
-                        <FeedbackForm 
-                            cargoAlvo={cargoAlvo} 
-                            areaAtuacao={areaAtuacao} 
-                            onFeedbackSubmitted={handleFeedbackSubmitted}
-                        />
-                    </DialogContent>
-                </Dialog>
+                {/* Feedback Modal Removed */}
 
                 {/* CTA Final */}
                 <div className="mt-12 text-center">
@@ -489,17 +453,17 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                                 <Button 
                                     size="lg"
                                     className="bg-white text-blue-600 hover:bg-blue-50 gap-2 no-print shadow-md font-semibold"
-                                    onClick={() => handleAction(() => window.print())}
+                                    onClick={() => window.print()}
                                 >
-                                    {hasRated ? <Printer className="w-5 h-5" /> : <Lock className="w-4 h-4" />}
+                                    <Printer className="w-5 h-5" />
                                     Imprimir / Salvar PDF
                                 </Button>
                                 <Button 
                                     size="lg"
                                     className="bg-white text-blue-600 hover:bg-blue-50 gap-2 no-print shadow-md font-semibold"
-                                    onClick={() => handleAction(downloadAsWord)}
+                                    onClick={downloadAsWord}
                                 >
-                                    {hasRated ? <FileText className="w-5 h-5" /> : <Lock className="w-4 h-4" />}
+                                    <FileText className="w-5 h-5" />
                                     Baixar em Word
                                 </Button>
                             </div>
