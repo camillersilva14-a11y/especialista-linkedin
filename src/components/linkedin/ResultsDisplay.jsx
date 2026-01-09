@@ -30,27 +30,36 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
     };
 
     const handleProtectedAction = async (action) => {
-        const isAuthenticated = await base44.auth.isAuthenticated();
-        if (!isAuthenticated) {
-            // Save current state to restore after login
-            sessionStorage.setItem('pendingAnalysisResults', JSON.stringify(results));
-            sessionStorage.setItem('pendingUserData', JSON.stringify({ cargoAlvo, areaAtuacao }));
-            await base44.auth.redirectToLogin();
-        } else {
-            // Check if we have the necessary contact info (whatsapp)
-            try {
-                const user = await base44.auth.me();
-                if (!user.whatsapp || user.whatsapp === "Não informado" || user.whatsapp.trim() === "") {
-                    setPendingAction(() => action);
-                    setShowWhatsAppModal(true);
-                } else {
+        try {
+            const isAuthenticated = await base44.auth.isAuthenticated();
+            if (!isAuthenticated) {
+                // Save current state to restore after login - using localStorage to ensure persistence across redirects
+                localStorage.setItem('pendingAnalysisResults', JSON.stringify(results));
+                localStorage.setItem('pendingUserData', JSON.stringify({ cargoAlvo, areaAtuacao }));
+                await base44.auth.redirectToLogin(window.location.href);
+            } else {
+                // Check if we have the necessary contact info (whatsapp)
+                try {
+                    const user = await base44.auth.me();
+                    // Check if whatsapp is missing or empty
+                    if (!user.whatsapp || user.whatsapp === "Não informado" || user.whatsapp.trim() === "") {
+                        setPendingAction(() => action);
+                        setShowWhatsAppModal(true);
+                    } else {
+                        action();
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data", error);
+                    // Fallback to action if user fetch fails
                     action();
                 }
-            } catch (error) {
-                console.error("Error fetching user data", error);
-                // Fallback to action if user fetch fails, though unlikely if authenticated
-                action();
             }
+        } catch (err) {
+            console.error("Error in protected action handler:", err);
+            // Fallback to login if something goes wrong with auth check
+            localStorage.setItem('pendingAnalysisResults', JSON.stringify(results));
+            localStorage.setItem('pendingUserData', JSON.stringify({ cargoAlvo, areaAtuacao }));
+            await base44.auth.redirectToLogin(window.location.href);
         }
     };
 

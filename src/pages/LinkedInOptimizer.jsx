@@ -30,9 +30,9 @@ export default function LinkedInOptimizer() {
   };
 
   useEffect(() => {
-    // Check for pending results from before login
-    const pendingResults = sessionStorage.getItem('pendingAnalysisResults');
-    const pendingData = sessionStorage.getItem('pendingUserData');
+    // Check for pending results from before login - using localStorage
+    const pendingResults = localStorage.getItem('pendingAnalysisResults');
+    const pendingData = localStorage.getItem('pendingUserData');
 
     if (pendingResults && pendingData) {
       try {
@@ -40,8 +40,8 @@ export default function LinkedInOptimizer() {
         setUserData(JSON.parse(pendingData));
         
         // Clear storage
-        sessionStorage.removeItem('pendingAnalysisResults');
-        sessionStorage.removeItem('pendingUserData');
+        localStorage.removeItem('pendingAnalysisResults');
+        localStorage.removeItem('pendingUserData');
 
         // Scroll to results
         setTimeout(() => {
