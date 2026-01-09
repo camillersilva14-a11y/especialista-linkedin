@@ -66,7 +66,15 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
 
         try {
             // Check auth for lead creation only, don't block analysis
-            const user = await base44.auth.me();
+            let user = null;
+            try {
+                if (await base44.auth.isAuthenticated()) {
+                    user = await base44.auth.me();
+                }
+            } catch (authError) {
+                // Ignore auth errors, user just won't be identified
+                console.log("User not authenticated", authError);
+            }
 
             // Salvar Lead usando dados do usuário logado via backend function (se logado)
             if (user) {
