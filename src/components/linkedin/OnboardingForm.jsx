@@ -63,6 +63,9 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
         }
 
         onAnalysisStart();
+        
+        // Pequeno delay para garantir que a UI atualize e mostre o popup antes do processamento pesado
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         try {
             // Check auth for lead creation only, don't block analysis

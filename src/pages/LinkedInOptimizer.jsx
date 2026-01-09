@@ -109,28 +109,6 @@ export default function LinkedInOptimizer() {
                 </div>
       }
 
-            {/* Analysis Loading Popup - Custom Overlay */}
-            {isAnalyzing && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
-                        <div className="flex flex-col items-center text-center space-y-4">
-                            <div className="p-4 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full shadow-inner">
-                                <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900">
-                                Estamos avaliando o seu currículo
-                            </h3>
-                            <p className="text-base text-gray-600">
-                                Nossa IA está lendo seu perfil e preparando recomendações estratégicas para o mercado farmacêutico.
-                            </p>
-                            <div className="bg-blue-50 text-blue-800 text-sm py-2 px-4 rounded-full font-medium mt-2">
-                                Isso leva apenas alguns segundos...
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Footer */}
             <footer className="bg-gray-900 text-white mt-20">
                 <div className="mx-auto px-4 py-12 max-w-7xl sm:px-6 lg:px-8">
@@ -161,6 +139,27 @@ export default function LinkedInOptimizer() {
                     </div>
                 </div>
             </footer>
+            {/* Analysis Loading Popup - Custom Overlay - Moved to end of file for stacking context */}
+            {isAnalyzing && (
+                <div className="fixed inset-0 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999 }}>
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300 relative z-50">
+                        <div className="flex flex-col items-center text-center space-y-4">
+                            <div className="p-4 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full shadow-inner">
+                                <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900">
+                                Estamos avaliando o seu currículo
+                            </h3>
+                            <p className="text-base text-gray-600">
+                                Nossa IA está lendo seu perfil e preparando recomendações estratégicas para o mercado farmacêutico.
+                            </p>
+                            <div className="bg-blue-50 text-blue-800 text-sm py-2 px-4 rounded-full font-medium mt-2">
+                                Isso leva apenas alguns segundos...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>);
 
 }
