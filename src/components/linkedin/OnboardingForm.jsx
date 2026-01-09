@@ -65,15 +65,10 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
         onAnalysisStart();
 
         try {
-            const isAuthenticated = await base44.auth.isAuthenticated();
-            if (!isAuthenticated) {
-                await base44.auth.redirectToLogin();
-                return;
-            }
-
+            // Check auth for lead creation only, don't block analysis
             const user = await base44.auth.me();
 
-            // Salvar Lead usando dados do usuário logado via backend function
+            // Salvar Lead usando dados do usuário logado via backend function (se logado)
             if (user) {
                 try {
                     await base44.functions.invoke('createLead', {

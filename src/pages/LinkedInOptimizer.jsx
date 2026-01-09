@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import HeroSection from "../components/linkedin/HeroSection";
@@ -25,6 +25,33 @@ export default function LinkedInOptimizer() {
       });
     }, 100);
   };
+
+  useEffect(() => {
+    // Check for pending results from before login
+    const pendingResults = sessionStorage.getItem('pendingAnalysisResults');
+    const pendingData = sessionStorage.getItem('pendingUserData');
+
+    if (pendingResults && pendingData) {
+      try {
+        setAnalysisResults(JSON.parse(pendingResults));
+        setUserData(JSON.parse(pendingData));
+        
+        // Clear storage
+        sessionStorage.removeItem('pendingAnalysisResults');
+        sessionStorage.removeItem('pendingUserData');
+
+        // Scroll to results
+        setTimeout(() => {
+          document.getElementById('results-section')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 500);
+      } catch (e) {
+        console.error("Error restoring pending analysis:", e);
+      }
+    }
+  }, []);
 
   const handleAnalysisStart = () => {
     setIsAnalyzing(true);

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,18 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
         navigator.clipboard.writeText(text);
         setCopiedSection(section);
         setTimeout(() => setCopiedSection(null), 2000);
+    };
+
+    const handleProtectedAction = async (action) => {
+        const isAuthenticated = await base44.auth.isAuthenticated();
+        if (!isAuthenticated) {
+            // Save current state to restore after login
+            sessionStorage.setItem('pendingAnalysisResults', JSON.stringify(results));
+            sessionStorage.setItem('pendingUserData', JSON.stringify({ cargoAlvo, areaAtuacao }));
+            await base44.auth.redirectToLogin();
+        } else {
+            action();
+        }
     };
 
     const downloadAsWord = () => {
@@ -453,7 +466,7 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                                 <Button 
                                     size="lg"
                                     className="bg-white text-blue-600 hover:bg-blue-50 gap-2 no-print shadow-md font-semibold"
-                                    onClick={() => window.print()}
+                                    onClick={() => handleProtectedAction(() => window.print())}
                                 >
                                     <Printer className="w-5 h-5" />
                                     Imprimir / Salvar PDF
@@ -461,7 +474,7 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                                 <Button 
                                     size="lg"
                                     className="bg-white text-blue-600 hover:bg-blue-50 gap-2 no-print shadow-md font-semibold"
-                                    onClick={downloadAsWord}
+                                    onClick={() => handleProtectedAction(downloadAsWord)}
                                 >
                                     <FileText className="w-5 h-5" />
                                     Baixar em Word
