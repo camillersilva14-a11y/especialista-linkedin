@@ -46,6 +46,16 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                         setPendingAction(() => action);
                         setShowWhatsAppModal(true);
                     } else {
+                        // Ensure we capture the lead data even if they already had whatsapp (e.g. from Google login)
+                        try {
+                             await base44.functions.invoke('createLead', {
+                                full_name: user.full_name,
+                                email: user.email,
+                                whatsapp: user.whatsapp
+                            });
+                        } catch (e) {
+                            console.error("Error ensuring lead capture", e);
+                        }
                         action();
                     }
                 } catch (error) {
