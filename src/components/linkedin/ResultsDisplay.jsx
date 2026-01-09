@@ -3,6 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, Copy, TrendingUp, Lightbulb, Key, FileText, Award, Info, Printer, Lock } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -14,6 +16,12 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
     const [hasRated, setHasRated] = useState(false);
     // Feedback logic removed as per request to remove obligatoriness
     const [showFeedbackModal, setShowFeedbackModal] = useState(false); // Kept state to minimize changes impact if referenced elsewhere, though effectively unused for blocking now.
+
+    // WhatsApp collection state
+    const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+    const [whatsappInput, setWhatsappInput] = useState("");
+    const [pendingAction, setPendingAction] = useState(null);
+    const [isSavingUser, setIsSavingUser] = useState(false);
 
     const copyToClipboard = (text, section) => {
         navigator.clipboard.writeText(text);
@@ -29,7 +37,50 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
             sessionStorage.setItem('pendingUserData', JSON.stringify({ cargoAlvo, areaAtuacao }));
             await base44.auth.redirectToLogin();
         } else {
-            action();
+            // Check if we have the necessary contact info (whatsapp)
+            try {
+                const user = await base44.auth.me();
+                if (!user.whatsapp || user.whatsapp === "Não informado" || user.whatsapp.trim() === "") {
+                    setPendingAction(() => action);
+                    setShowWhatsAppModal(true);
+                } else {
+                    action();
+                }
+            } catch (error) {
+                console.error("Error fetching user data", error);
+                // Fallback to action if user fetch fails, though unlikely if authenticated
+                action();
+            }
+        }
+    };
+
+    const handleSaveWhatsApp = async () => {
+        if (!whatsappInput.trim()) return;
+        
+        setIsSavingUser(true);
+        try {
+            await base44.auth.updateMe({ whatsapp: whatsappInput });
+            setShowWhatsAppModal(false);
+            if (pendingAction) {
+                pendingAction();
+                setPendingAction(null);
+            }
+            // Also ensure we have a lead for this user with the new data
+            const user = await base44.auth.me();
+            try {
+                await base44.functions.invoke('createLead', {
+                    full_name: user.full_name,
+                    email: user.email,
+                    whatsapp: user.whatsapp
+                });
+            } catch (e) {
+                console.error("Error updating lead", e);
+            }
+
+        } catch (error) {
+            console.error("Error updating user", error);
+        } finally {
+            setIsSavingUser(false);
         }
     };
 
@@ -443,6 +494,36 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                 </div>
 
                 {/* Feedback Modal Removed */}
+
+                {/* WhatsApp Collection Modal */}
+                <Dialog open={showWhatsAppModal} onOpenChange={setShowWhatsAppModal}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Complete seu cadastro</DialogTitle>
+                            <DialogDescription>
+                                Para baixar ou imprimir seu relatório, precisamos confirmar seu WhatsApp para enviar atualizações importantes.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="whatsapp">WhatsApp</Label>
+                                <Input
+                                    id="whatsapp"
+                                    placeholder="(11) 99999-9999"
+                                    value={whatsappInput}
+                                    onChange={(e) => setWhatsappInput(e.target.value)}
+                                />
+                            </div>
+                            <Button 
+                                onClick={handleSaveWhatsApp} 
+                                disabled={!whatsappInput.trim() || isSavingUser}
+                                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                            >
+                                {isSavingUser ? "Salvando..." : "Confirmar e Baixar"}
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
 
                 {/* CTA Final */}
                 <div className="mt-12 text-center">
