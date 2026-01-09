@@ -116,7 +116,7 @@ export default function LinkedInOptimizer() {
                                 <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
                             </div>
                             <span className="text-xl font-bold text-gray-900">
-                                Seu currículo está em análise
+                                Estamos avaliando o seu currículo
                             </span>
                         </DialogTitle>
                         <DialogDescription className="text-center text-base text-gray-600 pt-2 pb-4">
