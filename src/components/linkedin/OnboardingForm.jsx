@@ -79,6 +79,7 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
             const fileBase64 = await toBase64(cvFile);
 
             // Chamar a função de backend para análise (envia arquivo em base64 para upload via service role)
+            // Utilizando o invoke do SDK que deve funcionar para usuários não autenticados pois a função é pública
             const { data: results } = await base44.functions.invoke('analyzeResume', {
                 file_data: fileBase64,
                 filename: cvFile.name,

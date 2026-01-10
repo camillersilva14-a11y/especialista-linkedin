@@ -54,6 +54,10 @@ export default function AdminDashboard() {
       if (!user || user.role !== "admin") {
         setError("Acesso restrito: Apenas administradores podem visualizar esta página.");
         setLoading(false);
+        // Redirect to home after 2 seconds
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
         return;
       }
 

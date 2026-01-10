@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.3';
 
 Deno.serve(async (req) => {
     try {
@@ -27,12 +27,19 @@ Deno.serve(async (req) => {
         const file = new File([fileBlob], filename || "resume.pdf", { type: fileBlob.type });
 
         // 1. Upload file using service role (bypassing user auth requirement)
-        const uploadResult = await base44.asServiceRole.integrations.Core.UploadPrivateFile({ 
-            file: file 
-        });
+        // Using asServiceRole is critical here to allow unauthenticated users to upload
+        let uploadResult;
+        try {
+             uploadResult = await base44.asServiceRole.integrations.Core.UploadPrivateFile({ 
+                file: file 
+            });
+        } catch (uploadError) {
+            console.error("UploadPrivateFile error:", uploadError);
+            throw new Error(`Failed to upload file: ${uploadError.message}`);
+        }
 
-        if (!uploadResult.file_uri) {
-            throw new Error("Failed to upload file");
+        if (!uploadResult || !uploadResult.file_uri) {
+            throw new Error("Failed to upload file (no URI returned)");
         }
 
         // 2. Create signed URL for the LLM to access it
@@ -139,6 +146,7 @@ IMPORTANTE: Retorne EXATAMENTE no formato JSON especificado, sem texto adicional
         };
 
         // 4. Call LLM
+        // Using asServiceRole to ensure we have permission to use the integration
         const results = await base44.asServiceRole.integrations.Core.InvokeLLM({
             prompt: prompt,
             file_urls: [file_url],
