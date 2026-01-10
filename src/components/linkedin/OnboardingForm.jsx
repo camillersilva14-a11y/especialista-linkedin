@@ -103,106 +103,11 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
                 throw new Error("Erro ao enviar o arquivo. Por favor, tente novamente ou verifique o arquivo.");
             }
 
-            // Prompt para análise do perfil
-            const prompt = `Você é um consultor sênior de carreira e especialista no algoritmo do LinkedIn, especializado no mercado farmacêutico brasileiro.
-
-CONTEXTO:
-- Cargo Alvo: ${formData.cargoAlvo}
-- Área de Atuação: ${formData.areaAtuacao}
-- Currículo anexado: ${file_url}
-
-TAREFA:
-Analise o currículo em anexo e crie um relatório completo de otimização do perfil LinkedIn para este profissional, considerando o cargo alvo no mercado farmacêutico brasileiro.
-
-DIRETRIZES PARA A SEÇÃO "SOBRE":
-- Utilize a técnica de STORYTELLING para narrar a trajetória profissional.
-- Conecte as experiências passadas com o objetivo futuro (${formData.cargoAlvo}).
-- Destaque conquistas quantitativas e qualitativas do currículo.
-- Use tom profissional, confiante e empático.
-- Estruture em: Gancho (Headline expandida), Minha História (Jornada), Expertise (Competências chave) e Como posso ajudar (Proposta de valor).
-
-IMPORTANTE: Retorne EXATAMENTE no formato JSON especificado, sem texto adicional antes ou depois do JSON.`;
-
-            // Schema do JSON de resposta
-            const responseSchema = {
-                type: "object",
-                properties: {
-                    diagnostico: {
-                        type: "object",
-                        properties: {
-                            nota: { type: "number", description: "Nota de 0 a 100" },
-                            explicacao: { type: "string", description: "Explicação detalhada do diagnóstico em markdown" },
-                            checklistVisual: { type: "string", description: "Checklist visual dos principais pontos de melhoria" }
-                        }
-                    },
-                    headlines: {
-                        type: "array",
-                        items: { type: "string" },
-                        description: "3 opções de headlines otimizadas"
-                    },
-                    sobre: {
-                        type: "string",
-                        description: "Reescrita da seção 'Sobre' em markdown, usando storytelling envolvente, primeira pessoa, focada em resultados e alinhada ao cargo alvo."
-                    },
-                    experiencia: {
-                        type: "string",
-                        description: "Exemplo de otimização de uma experiência profissional"
-                    },
-                    palavrasChave: {
-                        type: "object",
-                        properties: {
-                            topKeywords: {
-                                type: "array",
-                                items: {
-                                    type: "object",
-                                    properties: {
-                                        keyword: { type: "string" },
-                                        relevancia: { type: "string" }
-                                    }
-                                },
-                                description: "Top 10 palavras-chave para o cargo"
-                            },
-                            hardSkills: {
-                                type: "array",
-                                items: {
-                                    type: "object",
-                                    properties: {
-                                        skill: { type: "string" },
-                                        justificativa: { type: "string" }
-                                    }
-                                },
-                                description: "5 hard skills essenciais"
-                            },
-                            softSkills: {
-                                type: "array",
-                                items: {
-                                    type: "object",
-                                    properties: {
-                                        skill: { type: "string" },
-                                        justificativa: { type: "string" }
-                                    }
-                                },
-                                description: "5 soft skills importantes"
-                            },
-                            gaps: {
-                                type: "array",
-                                items: { type: "string" },
-                                description: "Gaps identificados que podem ser desenvolvidos"
-                            }
-                        }
-                    },
-                    dicaOuro: {
-                        type: "string",
-                        description: "Uma dica prática de engajamento para começar hoje"
-                    }
-                }
-            };
-
-            // Chamar a IA com o currículo anexado
-            const results = await base44.integrations.Core.InvokeLLM({
-                prompt: prompt,
-                file_urls: [file_url],
-                response_json_schema: responseSchema
+            // Chamar a função de backend para análise (permite uso sem login obrigatório na plataforma)
+            const { data: results } = await base44.functions.invoke('analyzeResume', {
+                file_url: file_url,
+                cargoAlvo: formData.cargoAlvo,
+                areaAtuacao: formData.areaAtuacao
             });
 
             onAnalysisComplete(results, formData);
