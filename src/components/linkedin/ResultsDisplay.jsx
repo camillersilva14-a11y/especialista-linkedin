@@ -17,9 +17,10 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
     // Feedback logic removed as per request to remove obligatoriness
     const [showFeedbackModal, setShowFeedbackModal] = useState(false); // Kept state to minimize changes impact if referenced elsewhere, though effectively unused for blocking now.
 
-    // WhatsApp collection state
-    const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+    // Contact info collection state
+    const [showContactModal, setShowContactModal] = useState(false);
     const [whatsappInput, setWhatsappInput] = useState("");
+    const [nameInput, setNameInput] = useState("");
     const [pendingAction, setPendingAction] = useState(null);
     const [isSavingUser, setIsSavingUser] = useState(false);
 
@@ -38,15 +39,19 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                 localStorage.setItem('pendingUserData', JSON.stringify({ cargoAlvo, areaAtuacao }));
                 await base44.auth.redirectToLogin(window.location.href);
             } else {
-                // Check if we have the necessary contact info (whatsapp)
+                // Check if we have the necessary contact info (whatsapp and name)
                 try {
                     const user = await base44.auth.me();
-                    // Check if whatsapp is missing or empty
-                    if (!user.whatsapp || user.whatsapp === "Não informado" || user.whatsapp.trim() === "") {
+                    const missingWhatsapp = !user.whatsapp || user.whatsapp === "Não informado" || user.whatsapp.trim() === "";
+                    const missingName = !user.full_name || user.full_name.trim() === "";
+
+                    if (missingWhatsapp || missingName) {
                         setPendingAction(() => action);
-                        setShowWhatsAppModal(true);
+                        if (missingName) setNameInput(user.full_name || "");
+                        if (!missingWhatsapp) setWhatsappInput(user.whatsapp);
+                        setShowContactModal(true);
                     } else {
-                        // Ensure we capture the lead data even if they already had whatsapp (e.g. from Google login)
+                        // Ensure we capture the lead data
                         try {
                              await base44.functions.invoke('createLead', {
                                 full_name: user.full_name,
@@ -60,40 +65,46 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                     }
                 } catch (error) {
                     console.error("Error fetching user data", error);
-                    // Fallback to action if user fetch fails
                     action();
                 }
             }
         } catch (err) {
             console.error("Error in protected action handler:", err);
-            // Fallback to login if something goes wrong with auth check
             localStorage.setItem('pendingAnalysisResults', JSON.stringify(results));
             localStorage.setItem('pendingUserData', JSON.stringify({ cargoAlvo, areaAtuacao }));
             await base44.auth.redirectToLogin(window.location.href);
         }
     };
 
-    const handleSaveWhatsApp = async () => {
+    const handleSaveContactInfo = async () => {
         if (!whatsappInput.trim()) return;
         
         setIsSavingUser(true);
         try {
-            await base44.auth.updateMe({ whatsapp: whatsappInput });
-            setShowWhatsAppModal(false);
-            if (pendingAction) {
-                pendingAction();
-                setPendingAction(null);
+            const updates = { whatsapp: whatsappInput };
+            if (nameInput.trim()) {
+                updates.full_name = nameInput;
             }
+
+            await base44.auth.updateMe(updates);
+            setShowContactModal(false);
+            
             // Also ensure we have a lead for this user with the new data
+            // We fetch me again to get confirmed data or use the inputs
             const user = await base44.auth.me();
             try {
                 await base44.functions.invoke('createLead', {
-                    full_name: user.full_name,
+                    full_name: user.full_name || nameInput,
                     email: user.email,
-                    whatsapp: user.whatsapp
+                    whatsapp: user.whatsapp || whatsappInput
                 });
             } catch (e) {
                 console.error("Error updating lead", e);
+            }
+
+            if (pendingAction) {
+                pendingAction();
+                setPendingAction(null);
             }
 
         } catch (error) {
@@ -514,16 +525,25 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
 
                 {/* Feedback Modal Removed */}
 
-                {/* WhatsApp Collection Modal */}
-                <Dialog open={showWhatsAppModal} onOpenChange={setShowWhatsAppModal}>
+                {/* Contact Info Collection Modal */}
+                <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
                     <DialogContent className="sm:max-w-md">
                         <DialogHeader>
                             <DialogTitle>Complete seu cadastro</DialogTitle>
                             <DialogDescription>
-                                Para baixar ou imprimir seu relatório, precisamos confirmar seu WhatsApp para enviar atualizações importantes.
+                                Para baixar ou imprimir seu relatório, precisamos confirmar seus dados de contato.
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="fullname">Nome Completo</Label>
+                                <Input
+                                    id="fullname"
+                                    placeholder="Seu nome completo"
+                                    value={nameInput}
+                                    onChange={(e) => setNameInput(e.target.value)}
+                                />
+                            </div>
                             <div className="space-y-2">
                                 <Label htmlFor="whatsapp">WhatsApp</Label>
                                 <Input
@@ -534,8 +554,8 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                                 />
                             </div>
                             <Button 
-                                onClick={handleSaveWhatsApp} 
-                                disabled={!whatsappInput.trim() || isSavingUser}
+                                onClick={handleSaveContactInfo} 
+                                disabled={!whatsappInput.trim() || !nameInput.trim() || isSavingUser}
                                 className="w-full bg-green-600 hover:bg-green-700 text-white"
                             >
                                 {isSavingUser ? "Salvando..." : "Confirmar e Baixar"}
