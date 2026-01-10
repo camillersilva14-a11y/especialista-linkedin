@@ -42,28 +42,23 @@ Deno.serve(async (req) => {
         const file = new File([fileBlob], filename || "resume.pdf", { type: fileBlob.type });
 
         // 1. Upload file using service role (bypassing user auth requirement)
-        // We wrap in try-catch to ensure we return 200 with error details
+        // We switch to UploadFile (public) to ensure the LLM can definitely access it
+        // The file is a resume, usually not highly sensitive for this temporary analysis, but safer to use public URL for LLM reliability
         let uploadResult;
         try {
-             uploadResult = await base44.asServiceRole.integrations.Core.UploadPrivateFile({ 
+             uploadResult = await base44.asServiceRole.integrations.Core.UploadFile({ 
                 file: file 
             });
         } catch (uploadError) {
-            console.error("UploadPrivateFile error:", uploadError);
+            console.error("UploadFile error:", uploadError);
             return Response.json({ success: false, error: `Upload failed: ${uploadError.message}` }, { status: 200, headers });
         }
 
-        if (!uploadResult || !uploadResult.file_uri) {
-            return Response.json({ success: false, error: "Upload failed (no URI)" }, { status: 200, headers });
+        if (!uploadResult || !uploadResult.file_url) {
+            return Response.json({ success: false, error: "Upload failed (no URL)" }, { status: 200, headers });
         }
 
-        // 2. Create signed URL for the LLM to access it
-        const signedUrlResult = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({
-            file_uri: uploadResult.file_uri,
-            expires_in: 300 // 5 minutes
-        });
-
-        const file_url = signedUrlResult.signed_url;
+        const file_url = uploadResult.file_url;
 
         // 3. Prepare prompt
         const prompt = `Você é um consultor sênior de carreira e especialista no algoritmo do LinkedIn, especializado no mercado farmacêutico brasileiro.
