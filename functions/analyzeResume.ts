@@ -1,33 +1,39 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.3';
 
 Deno.serve(async (req) => {
+    // CORS headers
+    const headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Content-Type': 'application/json'
+    };
+
+    if (req.method === 'OPTIONS') {
+        return new Response('ok', { headers });
+    }
+
     try {
         if (req.method !== 'POST') {
-            return Response.json({ error: 'Method not allowed' }, { status: 405 });
+            return Response.json({ success: false, error: 'Method not allowed' }, { status: 200, headers });
         }
 
+        // Initialize client - this handles the service role key injection from env
         const base44 = createClientFromRequest(req);
         
         const body = await req.json();
         const { file_data, filename, cargoAlvo, areaAtuacao } = body;
 
         if (!file_data || !cargoAlvo || !areaAtuacao) {
-            return Response.json({ error: 'Missing required parameters' }, { status: 400 });
+            return Response.json({ success: false, error: 'Missing required parameters' }, { status: 200, headers });
         }
 
         // Convert Base64 to File object
-        // file_data is expected to be a data URL: "data:application/pdf;base64,..."
         const fileResponse = await fetch(file_data);
         const fileBlob = await fileResponse.blob();
-        
-        // We need to create a File object for the upload integration
-        // The integration expects the file directly in the payload property 'file'
-        // But for UploadPrivateFile, the input schema says "file": "string" (binary)
-        // In the SDK, we typically pass the File object.
         const file = new File([fileBlob], filename || "resume.pdf", { type: fileBlob.type });
 
         // 1. Upload file using service role (bypassing user auth requirement)
-        // Using asServiceRole is critical here to allow unauthenticated users to upload
+        // We wrap in try-catch to ensure we return 200 with error details
         let uploadResult;
         try {
              uploadResult = await base44.asServiceRole.integrations.Core.UploadPrivateFile({ 
@@ -35,11 +41,11 @@ Deno.serve(async (req) => {
             });
         } catch (uploadError) {
             console.error("UploadPrivateFile error:", uploadError);
-            throw new Error(`Failed to upload file: ${uploadError.message}`);
+            return Response.json({ success: false, error: `Upload failed: ${uploadError.message}` }, { status: 200, headers });
         }
 
         if (!uploadResult || !uploadResult.file_uri) {
-            throw new Error("Failed to upload file (no URI returned)");
+            return Response.json({ success: false, error: "Upload failed (no URI)" }, { status: 200, headers });
         }
 
         // 2. Create signed URL for the LLM to access it
@@ -146,17 +152,17 @@ IMPORTANTE: Retorne EXATAMENTE no formato JSON especificado, sem texto adicional
         };
 
         // 4. Call LLM
-        // Using asServiceRole to ensure we have permission to use the integration
         const results = await base44.asServiceRole.integrations.Core.InvokeLLM({
             prompt: prompt,
             file_urls: [file_url],
             response_json_schema: responseSchema
         });
 
-        return Response.json(results);
+        // SUCCESS!
+        return Response.json({ success: true, data: results }, { status: 200, headers });
 
     } catch (error) {
         console.error('Analysis error:', error);
-        return Response.json({ error: error.message || 'Internal server error' }, { status: 500 });
+        return Response.json({ success: false, error: error.message || 'Internal server error' }, { status: 200, headers });
     }
 });

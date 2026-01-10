@@ -64,11 +64,10 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
 
         onAnalysisStart();
         
-        // Pequeno delay para garantir que a UI atualize e mostre o popup antes do processamento pesado
+        // Pequeno delay
         await new Promise(resolve => setTimeout(resolve, 100));
 
         try {
-            // Prepare file for backend upload (to bypass frontend auth requirement)
             const toBase64 = file => new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -78,20 +77,26 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
 
             const fileBase64 = await toBase64(cvFile);
 
-            // Chamar a função de backend para análise (envia arquivo em base64 para upload via service role)
-            // Utilizando o invoke do SDK que deve funcionar para usuários não autenticados pois a função é pública
-            const { data: results } = await base44.functions.invoke('analyzeResume', {
+            // Chamar a função de backend (PÚBLICA)
+            // Agora esperamos um objeto { success, data, error } com status 200
+            const response = await base44.functions.invoke('analyzeResume', {
                 file_data: fileBase64,
                 filename: cvFile.name,
                 cargoAlvo: formData.cargoAlvo,
                 areaAtuacao: formData.areaAtuacao
             });
 
-            onAnalysisComplete(results, formData);
+            // O SDK retorna { data: { success: ..., data: ... }, status: 200 }
+            const responseData = response.data;
+
+            if (!responseData.success) {
+                throw new Error(responseData.error || "Erro desconhecido no servidor");
+            }
+
+            onAnalysisComplete(responseData.data, formData);
 
         } catch (err) {
             console.error('Erro na análise:', err);
-            // Garante que o loading fique visível por pelo menos 1.5s antes de mostrar o erro, para o usuário ver que tentou
             await new Promise(resolve => setTimeout(resolve, 1500));
             setError(err.message || "Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.");
             onAnalysisComplete(null);
@@ -133,12 +138,12 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
                                         <li>Sua área de atuação no mercado farmacêutico</li>
                                     </ul>
                                 </div>
-                                </div>
-                                </div>
+                            </div>
+                        </div>
 
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                {/* Upload CV */}
-                                <div className="space-y-2">
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Upload CV */}
+                            <div className="space-y-2">
                                 <Label htmlFor="cv-upload" className="text-base font-semibold text-gray-800">
                                     1. Upload do Currículo *
                                 </Label>
