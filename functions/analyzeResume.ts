@@ -18,7 +18,16 @@ Deno.serve(async (req) => {
         }
 
         // Initialize client - this handles the service role key injection from env
-        const base44 = createClientFromRequest(req);
+        let base44;
+        try {
+            base44 = createClientFromRequest(req);
+        } catch (e) {
+            console.error("Error creating client:", e);
+            // If creating client fails (e.g. bad auth header), we try to proceed? 
+            // We need base44 object to use integrations.
+            // If createClientFromRequest fails, we can't use the SDK.
+            return Response.json({ success: false, error: 'Authentication initialization failed' }, { status: 200, headers });
+        }
         
         const body = await req.json();
         const { file_data, filename, cargoAlvo, areaAtuacao } = body;
