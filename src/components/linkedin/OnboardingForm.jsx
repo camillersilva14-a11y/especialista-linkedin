@@ -34,8 +34,8 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
                 setCvFile(null);
                 return;
             }
-            if (file.size > 10 * 1024 * 1024) {
-                setError("O arquivo deve ter no máximo 10MB");
+            if (file.size > 5 * 1024 * 1024) {
+                setError("O arquivo deve ter no máximo 5MB para garantir o envio rápido.");
                 setCvFile(null);
                 return;
             }
@@ -77,20 +77,31 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
 
             const fileBase64 = await toBase64(cvFile);
 
-            // Chamar a função de backend (PÚBLICA)
-            // Agora esperamos um objeto { success, data, error } com status 200
-            const response = await base44.functions.invoke('analyzeResume', {
-                file_data: fileBase64,
-                filename: cvFile.name,
-                cargoAlvo: formData.cargoAlvo,
-                areaAtuacao: formData.areaAtuacao
+            // Chamar a função de backend via fetch direto para evitar interceptadores de auth do SDK
+            // A função é pública e retorna 200 OK com { success, data, error }
+            const response = await fetch('/functions/analyzeResume', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    file_data: fileBase64,
+                    filename: cvFile.name,
+                    cargoAlvo: formData.cargoAlvo,
+                    areaAtuacao: formData.areaAtuacao
+                })
             });
 
-            // O SDK retorna { data: { success: ..., data: ... }, status: 200 }
-            const responseData = response.data;
+            if (!response.ok) {
+                // Se o status não for 200-299, algo errado aconteceu (ex: 413 Payload Too Large)
+                const errorText = await response.text().catch(() => "Erro desconhecido");
+                throw new Error(`Erro na comunicação com o servidor (${response.status}): ${errorText}`);
+            }
+
+            const responseData = await response.json();
 
             if (!responseData.success) {
-                throw new Error(responseData.error || "Erro desconhecido no servidor");
+                throw new Error(responseData.error || "Erro no processamento da análise");
             }
 
             onAnalysisComplete(responseData.data, formData);
