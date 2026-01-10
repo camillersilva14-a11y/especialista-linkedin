@@ -90,22 +90,20 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
                 }
             }
 
-            // Upload do arquivo
-            let file_url;
-            try {
-                const uploadResult = await base44.integrations.Core.UploadFile({ file: cvFile });
-                file_url = uploadResult.file_url;
-                if (!file_url) {
-                    throw new Error("Falha ao obter URL do arquivo.");
-                }
-            } catch (uploadError) {
-                console.error("Erro no upload:", uploadError);
-                throw new Error("Erro ao enviar o arquivo. Por favor, tente novamente ou verifique o arquivo.");
-            }
+            // Prepare file for backend upload (to bypass frontend auth requirement)
+            const toBase64 = file => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
 
-            // Chamar a função de backend para análise (permite uso sem login obrigatório na plataforma)
+            const fileBase64 = await toBase64(cvFile);
+
+            // Chamar a função de backend para análise (envia arquivo em base64 para upload via service role)
             const { data: results } = await base44.functions.invoke('analyzeResume', {
-                file_url: file_url,
+                file_data: fileBase64,
+                filename: cvFile.name,
                 cargoAlvo: formData.cargoAlvo,
                 areaAtuacao: formData.areaAtuacao
             });

@@ -7,16 +7,43 @@ Deno.serve(async (req) => {
         }
 
         const base44 = createClientFromRequest(req);
-        // Note: We do NOT check for user auth here because we want to allow unauthenticated users
-        // to use the analysis tool.
         
         const body = await req.json();
-        const { file_url, cargoAlvo, areaAtuacao } = body;
+        const { file_data, filename, cargoAlvo, areaAtuacao } = body;
 
-        if (!file_url || !cargoAlvo || !areaAtuacao) {
+        if (!file_data || !cargoAlvo || !areaAtuacao) {
             return Response.json({ error: 'Missing required parameters' }, { status: 400 });
         }
 
+        // Convert Base64 to File object
+        // file_data is expected to be a data URL: "data:application/pdf;base64,..."
+        const fileResponse = await fetch(file_data);
+        const fileBlob = await fileResponse.blob();
+        
+        // We need to create a File object for the upload integration
+        // The integration expects the file directly in the payload property 'file'
+        // But for UploadPrivateFile, the input schema says "file": "string" (binary)
+        // In the SDK, we typically pass the File object.
+        const file = new File([fileBlob], filename || "resume.pdf", { type: fileBlob.type });
+
+        // 1. Upload file using service role (bypassing user auth requirement)
+        const uploadResult = await base44.asServiceRole.integrations.Core.UploadPrivateFile({ 
+            file: file 
+        });
+
+        if (!uploadResult.file_uri) {
+            throw new Error("Failed to upload file");
+        }
+
+        // 2. Create signed URL for the LLM to access it
+        const signedUrlResult = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({
+            file_uri: uploadResult.file_uri,
+            expires_in: 300 // 5 minutes
+        });
+
+        const file_url = signedUrlResult.signed_url;
+
+        // 3. Prepare prompt
         const prompt = `Você é um consultor sênior de carreira e especialista no algoritmo do LinkedIn, especializado no mercado farmacêutico brasileiro.
 
 CONTEXTO:
@@ -111,11 +138,7 @@ IMPORTANTE: Retorne EXATAMENTE no formato JSON especificado, sem texto adicional
             }
         };
 
-        // Call the integration using the service role context (or just standard context but from backend)
-        // Using asServiceRole might be safer if the integration requires permissions the public user doesn't have.
-        // But usually standard context is fine if backend functions are allowed to call it.
-        // Actually, let's use asServiceRole to ensure it works even if the user is not authenticated.
-        
+        // 4. Call LLM
         const results = await base44.asServiceRole.integrations.Core.InvokeLLM({
             prompt: prompt,
             file_urls: [file_url],
