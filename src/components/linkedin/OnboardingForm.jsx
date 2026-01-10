@@ -68,28 +68,6 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
         await new Promise(resolve => setTimeout(resolve, 100));
 
         try {
-            // Check auth for lead creation only, don't block analysis
-            let user = null;
-            try {
-                if (await base44.auth.isAuthenticated()) {
-                    user = await base44.auth.me();
-                }
-            } catch (e) {}
-
-            // Salvar Lead usando dados do usuário logado via backend function
-            if (user) {
-                try {
-                    await base44.functions.invoke('createLead', {
-                        full_name: user.full_name,
-                        email: user.email,
-                        whatsapp: user.whatsapp
-                    });
-                } catch (leadError) {
-                    console.error("Erro ao salvar lead:", leadError);
-                    // Não interrompe o fluxo se falhar ao salvar o lead, mas loga o erro
-                }
-            }
-
             // Prepare file for backend upload (to bypass frontend auth requirement)
             const toBase64 = file => new Promise((resolve, reject) => {
                 const reader = new FileReader();
