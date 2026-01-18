@@ -558,7 +558,7 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="whatsapp">WhatsApp (com DDD)</Label>
+                                <Label htmlFor="whatsapp">Telefone (com DDD)</Label>
                                 <Input
                                     id="whatsapp"
                                     placeholder="(11) 99999-9999"

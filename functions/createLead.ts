@@ -22,8 +22,8 @@ Deno.serve(async (req) => {
         const emailToUse = email || (user && user.email);
         const phoneToUse = whatsapp || (user && user.whatsapp) || "Não informado";
 
-        if (!emailToUse && !phoneToUse) {
-             return Response.json({ error: 'Email or WhatsApp is required' }, { status: 400 });
+        if (!emailToUse || !phoneToUse || !nameToUse) {
+             return Response.json({ error: 'Nome, Email e Telefone são obrigatórios.' }, { status: 400 });
         }
 
         // Create Lead using service role to bypass RLS issues
