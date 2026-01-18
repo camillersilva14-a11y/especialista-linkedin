@@ -21,6 +21,7 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
     const [showContactModal, setShowContactModal] = useState(false);
     const [whatsappInput, setWhatsappInput] = useState("");
     const [nameInput, setNameInput] = useState("");
+    const [emailInput, setEmailInput] = useState("");
     const [pendingAction, setPendingAction] = useState(null);
     const [isSavingUser, setIsSavingUser] = useState(false);
 
@@ -33,82 +34,84 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
     const handleProtectedAction = async (action) => {
         try {
             const isAuthenticated = await base44.auth.isAuthenticated();
-            if (!isAuthenticated) {
-                // Save current state to restore after login - using localStorage to ensure persistence across redirects
-                localStorage.setItem('pendingAnalysisResults', JSON.stringify(results));
-                localStorage.setItem('pendingUserData', JSON.stringify({ cargoAlvo, areaAtuacao }));
-                await base44.auth.redirectToLogin(window.location.href);
-            } else {
-                // Check if we have the necessary contact info (whatsapp and name)
+            setPendingAction(() => action);
+            
+            if (isAuthenticated) {
                 try {
                     const user = await base44.auth.me();
-                    const missingWhatsapp = !user.whatsapp || user.whatsapp === "Não informado" || user.whatsapp.trim() === "";
-                    const missingName = !user.full_name || user.full_name.trim() === "";
-
-                    if (missingWhatsapp || missingName) {
-                        setPendingAction(() => action);
-                        if (missingName) setNameInput(user.full_name || "");
-                        if (!missingWhatsapp) setWhatsappInput(user.whatsapp);
+                    // Pre-fill data if available
+                    setNameInput(user.full_name || "");
+                    setWhatsappInput(user.whatsapp || "");
+                    setEmailInput(user.email || "");
+                    
+                    // If everything is present, we might want to skip modal?
+                    // But requirement says "collect data", maybe verify?
+                    // Let's check if fields are missing or empty
+                    if (!user.full_name || !user.whatsapp || !user.email) {
                         setShowContactModal(true);
                     } else {
-                        // Ensure we capture the lead data
-                        try {
-                             await base44.functions.invoke('createLead', {
-                                full_name: user.full_name,
-                                email: user.email,
-                                whatsapp: user.whatsapp
-                            });
-                        } catch (e) {
-                            console.error("Error ensuring lead capture", e);
-                        }
+                        // All info present, ensure lead created and proceed
+                        await base44.functions.invoke('createLead', {
+                            full_name: user.full_name,
+                            email: user.email,
+                            whatsapp: user.whatsapp
+                        });
                         action();
                     }
-                } catch (error) {
-                    console.error("Error fetching user data", error);
-                    action();
+                } catch (e) {
+                    setShowContactModal(true);
                 }
+            } else {
+                // Unauthenticated - show modal to collect data
+                setShowContactModal(true);
             }
         } catch (err) {
             console.error("Error in protected action handler:", err);
-            localStorage.setItem('pendingAnalysisResults', JSON.stringify(results));
-            localStorage.setItem('pendingUserData', JSON.stringify({ cargoAlvo, areaAtuacao }));
-            await base44.auth.redirectToLogin(window.location.href);
+            setShowContactModal(true);
         }
     };
 
     const handleSaveContactInfo = async () => {
-        if (!whatsappInput.trim()) return;
+        if (!whatsappInput.trim() || !nameInput.trim() || !emailInput.trim()) return;
         
         setIsSavingUser(true);
         try {
-            const updates = { whatsapp: whatsappInput };
-            if (nameInput.trim()) {
-                updates.full_name = nameInput;
+            // Try to update user profile if authenticated
+            try {
+                const isAuthenticated = await base44.auth.isAuthenticated();
+                if (isAuthenticated) {
+                    await base44.auth.updateMe({ 
+                        whatsapp: whatsappInput,
+                        full_name: nameInput
+                        // Email usually cannot be updated via updateMe directly if it's the auth identifier, but we collect it for the lead
+                    });
+                }
+            } catch (e) {
+                // Ignore auth update errors (e.g. not logged in)
             }
 
-            await base44.auth.updateMe(updates);
-            setShowContactModal(false);
-            
-            // Also ensure we have a lead for this user with the new data
-            // We fetch me again to get confirmed data or use the inputs
-            const user = await base44.auth.me();
+            // Create lead in backend
             try {
                 await base44.functions.invoke('createLead', {
-                    full_name: user.full_name || nameInput,
-                    email: user.email,
-                    whatsapp: user.whatsapp || whatsappInput
+                    full_name: nameInput,
+                    email: emailInput,
+                    whatsapp: whatsappInput
                 });
             } catch (e) {
-                console.error("Error updating lead", e);
+                console.error("Error creating lead", e);
+                // We might want to alert the user or just proceed?
+                // Let's proceed for now so user gets their PDF
             }
 
+            setShowContactModal(false);
+            
             if (pendingAction) {
                 pendingAction();
                 setPendingAction(null);
             }
 
         } catch (error) {
-            console.error("Error updating user", error);
+            console.error("Error saving contact info", error);
         } finally {
             setIsSavingUser(false);
         }
@@ -545,7 +548,17 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="whatsapp">WhatsApp</Label>
+                                <Label htmlFor="email">E-mail</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="seu@email.com"
+                                    value={emailInput}
+                                    onChange={(e) => setEmailInput(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="whatsapp">WhatsApp (com DDD)</Label>
                                 <Input
                                     id="whatsapp"
                                     placeholder="(11) 99999-9999"
@@ -555,7 +568,7 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                             </div>
                             <Button 
                                 onClick={handleSaveContactInfo} 
-                                disabled={!whatsappInput.trim() || !nameInput.trim() || isSavingUser}
+                                disabled={!whatsappInput.trim() || !nameInput.trim() || !emailInput.trim() || isSavingUser}
                                 className="w-full bg-green-600 hover:bg-green-700 text-white"
                             >
                                 {isSavingUser ? "Salvando..." : "Confirmar e Baixar"}

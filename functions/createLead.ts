@@ -7,20 +7,30 @@ Deno.serve(async (req) => {
         }
 
         const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
-
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
+        let user = null;
+        try {
+            user = await base44.auth.me();
+        } catch (e) {
+            // User might not be logged in, ignoring error
         }
 
         const body = await req.json();
         const { full_name, email, whatsapp } = body;
 
+        // Validate required fields if user is not logged in or fields are missing
+        const nameToUse = full_name || (user && user.full_name) || "Usuário";
+        const emailToUse = email || (user && user.email);
+        const phoneToUse = whatsapp || (user && user.whatsapp) || "Não informado";
+
+        if (!emailToUse && !phoneToUse) {
+             return Response.json({ error: 'Email or WhatsApp is required' }, { status: 400 });
+        }
+
         // Create Lead using service role to bypass RLS issues
         const result = await base44.asServiceRole.entities.Lead.create({
-            full_name: full_name || user.full_name || "Usuário",
-            email: email || user.email,
-            whatsapp: whatsapp || user.whatsapp || "Não informado",
+            full_name: nameToUse,
+            email: emailToUse,
+            whatsapp: phoneToUse,
             status: 'novo'
         });
 
