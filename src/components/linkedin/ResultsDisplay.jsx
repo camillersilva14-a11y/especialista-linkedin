@@ -539,31 +539,34 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                                <Label htmlFor="fullname">Nome Completo</Label>
+                                <Label htmlFor="fullname">Nome Completo *</Label>
                                 <Input
                                     id="fullname"
                                     placeholder="Seu nome completo"
                                     value={nameInput}
                                     onChange={(e) => setNameInput(e.target.value)}
+                                    required
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="email">E-mail</Label>
+                                <Label htmlFor="email">E-mail *</Label>
                                 <Input
                                     id="email"
                                     type="email"
                                     placeholder="seu@email.com"
                                     value={emailInput}
                                     onChange={(e) => setEmailInput(e.target.value)}
+                                    required
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="whatsapp">Telefone (com DDD)</Label>
+                                <Label htmlFor="whatsapp">Telefone com DDD *</Label>
                                 <Input
                                     id="whatsapp"
                                     placeholder="(11) 99999-9999"
                                     value={whatsappInput}
                                     onChange={(e) => setWhatsappInput(e.target.value)}
+                                    required
                                 />
                             </div>
                             <Button 

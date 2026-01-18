@@ -77,15 +77,15 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
 
             const fileBase64 = await toBase64(cvFile);
 
-            // Chamar a função de backend usando o SDK (que gerencia corretamente headers de app público)
+            // Chamar a função de backend usando o SDK
             const response = await base44.functions.invoke('analyzeResume', {
                 file_data: fileBase64,
                 filename: cvFile.name,
                 cargoAlvo: formData.cargoAlvo,
                 areaAtuacao: formData.areaAtuacao
             });
-
-            // O SDK retorna o objeto axios-style response, acessamos .data
+            
+            // Tratamento de resposta para garantir que erros do backend sejam capturados
             const responseData = response.data;
 
             if (!responseData.success) {

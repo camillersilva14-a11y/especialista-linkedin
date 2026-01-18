@@ -18,11 +18,11 @@ Deno.serve(async (req) => {
         const { full_name, email, whatsapp } = body;
 
         // Validate required fields if user is not logged in or fields are missing
-        const nameToUse = full_name || (user && user.full_name) || "Usuário";
+        const nameToUse = full_name || (user && user.full_name);
         const emailToUse = email || (user && user.email);
-        const phoneToUse = whatsapp || (user && user.whatsapp) || "Não informado";
+        const phoneToUse = whatsapp || (user && user.whatsapp);
 
-        if (!emailToUse || !phoneToUse || !nameToUse) {
+        if (!nameToUse || !emailToUse || !phoneToUse) {
              return Response.json({ error: 'Nome, Email e Telefone são obrigatórios.' }, { status: 400 });
         }
 
