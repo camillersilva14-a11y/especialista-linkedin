@@ -532,9 +532,9 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                 <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
                     <DialogContent className="sm:max-w-md">
                         <DialogHeader>
-                            <DialogTitle>Complete seu cadastro</DialogTitle>
+                            <DialogTitle>Quase lá!</DialogTitle>
                             <DialogDescription>
-                                Para baixar ou imprimir seu relatório, precisamos confirmar seus dados de contato.
+                                Informe seus dados para liberar o download do seu relatório.
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
