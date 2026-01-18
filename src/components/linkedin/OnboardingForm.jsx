@@ -77,26 +77,16 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
 
             const fileBase64 = await toBase64(cvFile);
 
-            // Chamar a função de backend via fetch para garantir acesso público sem barreiras de auth do SDK
-            const response = await fetch('/functions/analyzeResume', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    file_data: fileBase64,
-                    filename: cvFile.name,
-                    cargoAlvo: formData.cargoAlvo,
-                    areaAtuacao: formData.areaAtuacao
-                })
+            // Chamar a função de backend usando o SDK (que gerencia corretamente headers de app público)
+            const response = await base44.functions.invoke('analyzeResume', {
+                file_data: fileBase64,
+                filename: cvFile.name,
+                cargoAlvo: formData.cargoAlvo,
+                areaAtuacao: formData.areaAtuacao
             });
 
-            if (!response.ok) {
-                 const errorText = await response.text().catch(() => "Erro desconhecido");
-                 throw new Error(`Erro na comunicação com o servidor (${response.status}): ${errorText}`);
-            }
-
-            const responseData = await response.json();
+            // O SDK retorna o objeto axios-style response, acessamos .data
+            const responseData = response.data;
 
             if (!responseData.success) {
                 throw new Error(responseData.error || "Erro no processamento da análise");
