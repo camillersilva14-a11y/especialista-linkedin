@@ -61,8 +61,8 @@ export default function AdminDashboard() {
         return;
       }
 
-      const { data } = await base44.entities.Lead.list("-created_date", 100);
-      setLeads(data);
+      const data = await base44.entities.Lead.list("-created_date", 100);
+      setLeads(data || []);
     } catch (err) {
       console.error("Erro ao carregar dados:", err);
       setError("Erro ao verificar permissões ou carregar leads.");
@@ -71,7 +71,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const filteredLeads = leads.filter(
+  const filteredLeads = (leads || []).filter(
     (lead) =>
       lead.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
