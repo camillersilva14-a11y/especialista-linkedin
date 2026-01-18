@@ -51,14 +51,10 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                         setShowContactModal(true);
                     } else {
                         // All info present, ensure lead created and proceed
-                        await fetch('/functions/createLead', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                full_name: user.full_name,
-                                email: user.email,
-                                whatsapp: user.whatsapp
-                            })
+                        await base44.functions.invoke('createLead', {
+                            full_name: user.full_name,
+                            email: user.email,
+                            whatsapp: user.whatsapp
                         });
                         action();
                     }
@@ -96,19 +92,11 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
 
             // Create lead in backend
             try {
-                const leadResponse = await fetch('/functions/createLead', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        full_name: nameInput,
-                        email: emailInput,
-                        whatsapp: whatsappInput
-                    })
+                await base44.functions.invoke('createLead', {
+                    full_name: nameInput,
+                    email: emailInput,
+                    whatsapp: whatsappInput
                 });
-                
-                if (!leadResponse.ok) {
-                     console.error("Failed to create lead", await leadResponse.text());
-                }
             } catch (e) {
                 console.error("Error creating lead", e);
             }

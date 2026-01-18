@@ -26,20 +26,12 @@ export default function FeedbackForm({ cargoAlvo, areaAtuacao, onFeedbackSubmitt
         
         try {
             // Use backend function for reliable submission
-            const response = await fetch('/functions/submitFeedback', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    rating: Number(rating),
-                    cargo_alvo: cargoAlvo,
-                    area_atuacao: areaAtuacao,
-                    comments: comments
-                })
+            await base44.functions.invoke('submitFeedback', {
+                rating: Number(rating),
+                cargo_alvo: cargoAlvo,
+                area_atuacao: areaAtuacao,
+                comments: comments
             });
-
-            if (!response.ok) {
-                throw new Error("Falha ao enviar feedback");
-            }
             
             setIsSubmitted(true);
             if (onFeedbackSubmitted) {

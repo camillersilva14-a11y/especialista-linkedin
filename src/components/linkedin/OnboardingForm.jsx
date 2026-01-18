@@ -34,8 +34,8 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
                 setCvFile(null);
                 return;
             }
-            if (file.size > 5 * 1024 * 1024) {
-                setError("O arquivo deve ter no máximo 5MB para garantir o envio rápido.");
+            if (file.size > 2 * 1024 * 1024) {
+                setError("O arquivo deve ter no máximo 2MB para garantir o processamento.");
                 setCvFile(null);
                 return;
             }
@@ -77,26 +77,15 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
 
             const fileBase64 = await toBase64(cvFile);
 
-            // Chamar a função de backend via fetch para garantir acesso público
-            const response = await fetch('/functions/analyzeResume', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    file_data: fileBase64,
-                    filename: cvFile.name,
-                    cargoAlvo: formData.cargoAlvo,
-                    areaAtuacao: formData.areaAtuacao
-                })
+            // Chamar a função de backend usando o SDK
+            const response = await base44.functions.invoke('analyzeResume', {
+                file_data: fileBase64,
+                filename: cvFile.name,
+                cargoAlvo: formData.cargoAlvo,
+                areaAtuacao: formData.areaAtuacao
             });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Erro na comunicação com o servidor: ${errorText}`);
-            }
-
-            const responseData = await response.json();
+            
+            const responseData = response.data;
 
             if (!responseData.success) {
                 throw new Error(responseData.error || "Erro no processamento da análise");
