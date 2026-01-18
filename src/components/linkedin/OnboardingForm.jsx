@@ -77,16 +77,26 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
 
             const fileBase64 = await toBase64(cvFile);
 
-            // Chamar a função de backend usando o SDK
-            const response = await base44.functions.invoke('analyzeResume', {
-                file_data: fileBase64,
-                filename: cvFile.name,
-                cargoAlvo: formData.cargoAlvo,
-                areaAtuacao: formData.areaAtuacao
+            // Chamar a função de backend via fetch para garantir acesso público
+            const response = await fetch('/functions/analyzeResume', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    file_data: fileBase64,
+                    filename: cvFile.name,
+                    cargoAlvo: formData.cargoAlvo,
+                    areaAtuacao: formData.areaAtuacao
+                })
             });
-            
-            // Tratamento de resposta para garantir que erros do backend sejam capturados
-            const responseData = response.data;
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Erro na comunicação com o servidor: ${errorText}`);
+            }
+
+            const responseData = await response.json();
 
             if (!responseData.success) {
                 throw new Error(responseData.error || "Erro no processamento da análise");
