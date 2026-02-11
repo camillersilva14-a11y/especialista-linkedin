@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 // Dialog removed to use custom overlay
 import { Loader2 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 import HeroSection from "../components/linkedin/HeroSection";
 import HowItWorks from "../components/linkedin/HowItWorks";
 import OnboardingForm from "../components/linkedin/OnboardingForm";
@@ -18,8 +19,17 @@ export default function LinkedInOptimizer() {
     if (data) setUserData(data);
     setIsAnalyzing(false);
 
-    // Scroll suave até os resultados
+    // Track profile view completion
     if (results) {
+      base44.analytics.track({
+        eventName: "profile_view_completed",
+        properties: {
+          cargo_alvo: data?.cargoAlvo,
+          area_atuacao: data?.areaAtuacao
+        }
+      });
+
+      // Scroll suave até os resultados
       setTimeout(() => {
         document.getElementById('results-section')?.scrollIntoView({
           behavior: 'smooth',
