@@ -62,6 +62,14 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
             return;
         }
 
+        base44.analytics.track({
+            eventName: "profile_analysis_started",
+            properties: {
+                cargo_alvo: formData.cargoAlvo,
+                area_atuacao: formData.areaAtuacao
+            }
+        });
+
         onAnalysisStart();
         
         // Pequeno delay
