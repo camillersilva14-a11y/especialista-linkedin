@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, Copy, TrendingUp, Lightbulb, Key, FileText, Award, Info, Printer, Lock } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import FeedbackForm from "./FeedbackForm";
-import SectionFeedback from "./SectionFeedback";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
@@ -325,14 +324,6 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                                                     )}
                                                 </Button>
                                             </div>
-                                            <div className="flex justify-end mt-2">
-                                                <SectionFeedback 
-                                                    sectionName={`Headline Option ${index + 1}`}
-                                                    contentSnippet={headline}
-                                                    cargoAlvo={cargoAlvo}
-                                                    areaAtuacao={areaAtuacao}
-                                                />
-                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -369,16 +360,8 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6">
-                            <div className="prose max-w-none bg-white p-6 rounded-lg border mb-4">
+                            <div className="prose max-w-none bg-white p-6 rounded-lg border">
                                 <ReactMarkdown>{results.sobre || ""}</ReactMarkdown>
-                            </div>
-                            <div className="flex justify-end">
-                                <SectionFeedback 
-                                    sectionName="Sobre (About)"
-                                    contentSnippet={results.sobre}
-                                    cargoAlvo={cargoAlvo}
-                                    areaAtuacao={areaAtuacao}
-                                />
                             </div>
                         </CardContent>
                     </Card>
@@ -394,16 +377,8 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6">
-                            <div className="prose max-w-none mb-4">
+                            <div className="prose max-w-none">
                                 <ReactMarkdown>{results.experiencia || ""}</ReactMarkdown>
-                            </div>
-                            <div className="flex justify-end">
-                                <SectionFeedback 
-                                    sectionName="Experiencia"
-                                    contentSnippet={results.experiencia}
-                                    cargoAlvo={cargoAlvo}
-                                    areaAtuacao={areaAtuacao}
-                                />
                             </div>
                         </CardContent>
                     </Card>
@@ -530,20 +505,12 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6">
-                            <Alert className="bg-yellow-50 border-yellow-200 mb-4">
+                            <Alert className="bg-yellow-50 border-yellow-200">
                                 <Lightbulb className="h-5 w-5 text-yellow-600" />
                                 <AlertDescription className="text-base">
                                     <ReactMarkdown>{results.dicaOuro || ""}</ReactMarkdown>
                                 </AlertDescription>
                             </Alert>
-                            <div className="flex justify-end">
-                                <SectionFeedback 
-                                    sectionName="Dica de Ouro"
-                                    contentSnippet={results.dicaOuro}
-                                    cargoAlvo={cargoAlvo}
-                                    areaAtuacao={areaAtuacao}
-                                />
-                            </div>
                         </CardContent>
                     </Card>
                 </div>
