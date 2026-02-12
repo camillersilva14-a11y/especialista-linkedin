@@ -85,6 +85,16 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
 
             const fileBase64 = await toBase64(cvFile);
 
+            // Track optimization request
+            base44.analytics.track({
+                eventName: "profile_optimization_request",
+                properties: {
+                    cargo_alvo: formData.cargoAlvo,
+                    area_atuacao: formData.areaAtuacao,
+                    filename: cvFile.name
+                }
+            });
+
             // Chamar a função de backend usando o SDK
             const response = await base44.functions.invoke('analyzeResume', {
                 file_data: fileBase64,
