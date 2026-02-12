@@ -600,7 +600,13 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                                 <Button 
                                     size="lg"
                                     className="bg-white text-blue-600 hover:bg-blue-50 gap-2 no-print shadow-md font-semibold"
-                                    onClick={() => handleProtectedAction(() => window.print())}
+                                    onClick={() => {
+                                        base44.analytics.track({
+                                            eventName: "resume_download_click",
+                                            properties: { type: "pdf_print", cargo_alvo: cargoAlvo }
+                                        });
+                                        handleProtectedAction(() => window.print());
+                                    }}
                                 >
                                     <Printer className="w-5 h-5" />
                                     Imprimir / Salvar PDF
@@ -608,7 +614,13 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                                 <Button 
                                     size="lg"
                                     className="bg-white text-blue-600 hover:bg-blue-50 gap-2 no-print shadow-md font-semibold"
-                                    onClick={() => handleProtectedAction(downloadAsWord)}
+                                    onClick={() => {
+                                        base44.analytics.track({
+                                            eventName: "resume_download_click",
+                                            properties: { type: "word", cargo_alvo: cargoAlvo }
+                                        });
+                                        handleProtectedAction(downloadAsWord);
+                                    }}
                                 >
                                     <FileText className="w-5 h-5" />
                                     Baixar em Word
