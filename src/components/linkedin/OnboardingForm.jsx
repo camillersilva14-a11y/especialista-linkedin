@@ -149,7 +149,7 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
                                         Para começar, preciso dos seguintes dados:
                                     </p>
                                     <ul className="list-disc list-inside space-y-1 ml-2">
-                                        <li>Seu currículo em PDF ou Word</li>
+                                        <li>Seu currículo (preferencialmente em PDF)</li>
                                         <li>O cargo que você deseja conquistar</li>
                                         <li>Sua área de atuação no mercado farmacêutico</li>
                                     </ul>
@@ -161,7 +161,7 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
                             {/* Upload CV */}
                             <div className="space-y-2">
                                 <Label htmlFor="cv-upload" className="text-base font-semibold text-gray-800">
-                                    1. Upload do Currículo *
+                                    1. Upload do Currículo (PDF) *
                                 </Label>
                                 <label 
                                     htmlFor="cv-upload"
@@ -179,7 +179,7 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
                                         Clique para fazer upload do seu currículo
                                     </span>
                                     <p className="text-sm text-gray-500 mt-2">
-                                        PDF ou Word (máx. 10MB)
+                                        Preferencialmente em PDF (Word também aceito, máx. 10MB)
                                     </p>
                                     {cvFile && (
                                         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
