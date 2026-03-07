@@ -171,7 +171,7 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
                                     <Input
                                         id="cv-upload"
                                         type="file"
-                                        accept=".pdf,.doc,.docx"
+                                        accept=".pdf"
                                         onChange={handleFileChange}
                                         className="hidden"
                                     />
