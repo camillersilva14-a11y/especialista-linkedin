@@ -179,7 +179,7 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
                                         Clique para fazer upload do seu currículo
                                     </span>
                                     <p className="text-sm text-gray-500 mt-2">
-                                        Preferencialmente em PDF (Word também aceito, máx. 10MB)
+                                        Somente arquivo PDF (máx. 10MB)
                                     </p>
                                     {cvFile && (
                                         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
