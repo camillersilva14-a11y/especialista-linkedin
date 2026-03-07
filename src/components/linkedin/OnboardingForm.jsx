@@ -28,9 +28,9 @@ export default function OnboardingForm({ onAnalysisComplete, onAnalysisStart, is
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            const validTypes = ['application/pdf'];
             if (!validTypes.includes(file.type)) {
-                setError("Por favor, envie um arquivo PDF ou Word (.doc/.docx)");
+                setError("Por favor, envie o arquivo exclusivamente em formato PDF.");
                 setCvFile(null);
                 return;
             }
