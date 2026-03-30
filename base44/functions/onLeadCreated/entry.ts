@@ -2,19 +2,20 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
 Deno.serve(async (req) => {
     try {
+        // payload.data contém os dados da entidade Lead que acabou de ser criada
         const payload = await req.json();
-        const webhookUrl = Deno.env.get("ANALYTICS_WEBHOOK_URL");
         
-        if (!webhookUrl) {
-            console.warn("ANALYTICS_WEBHOOK_URL not set");
-            return Response.json({ success: true });
-        }
+        // URL de destino especificada
+        const webhookUrl = "https://api.base44.com/api/apps/prod/functions/receiveEvent?secret=saude-em-contexto-2026";
 
+        // Formatação do payload de acordo com o exigido pelo Saúde em Contexto Analytics
         const dataToSend = {
-            type: "lead_created",
-            lead: payload.data,
-            event: payload.event,
-            timestamp: new Date().toISOString()
+            app_name: "Especialista LinkedIn",
+            event_type: "lead",
+            user_name: payload.data?.full_name || "Nome não informado",
+            user_email: payload.data?.email || "Email não informado",
+            source: "LinkedIn",
+            event_name: "lead_captured"
         };
 
         const response = await fetch(webhookUrl, {
