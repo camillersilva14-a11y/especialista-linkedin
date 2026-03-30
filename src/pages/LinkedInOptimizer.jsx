@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 // Dialog removed to use custom overlay
 import { Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { trackPageview, trackSession } from "@/lib/tracker";
 import HeroSection from "../components/linkedin/HeroSection";
 import HowItWorks from "../components/linkedin/HowItWorks";
 import OnboardingForm from "../components/linkedin/OnboardingForm";
@@ -40,6 +41,9 @@ export default function LinkedInOptimizer() {
   };
 
   useEffect(() => {
+    trackPageview("home");
+    trackSession();
+    
     // Check for pending results from before login - using localStorage
     const pendingResults = localStorage.getItem('pendingAnalysisResults');
     const pendingData = localStorage.getItem('pendingUserData');

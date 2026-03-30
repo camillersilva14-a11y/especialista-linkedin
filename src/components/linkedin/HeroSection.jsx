@@ -2,9 +2,11 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { trackCTA } from "@/lib/tracker";
 
 export default function HeroSection() {
   const scrollToForm = () => {
+    trackCTA("hero_cta_primary", "hero");
     document.getElementById('onboarding-form')?.scrollIntoView({
       behavior: 'smooth',
       block: 'start'

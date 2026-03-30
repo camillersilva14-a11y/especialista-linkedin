@@ -10,6 +10,7 @@ import { CheckCircle2, Copy, TrendingUp, Lightbulb, Key, FileText, Award, Info, 
 import ReactMarkdown from "react-markdown";
 import FeedbackForm from "./FeedbackForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { trackLead } from "@/lib/tracker";
 
 export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
     const [copiedSection, setCopiedSection] = useState(null);
@@ -56,6 +57,7 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                             email: user.email,
                             whatsapp: user.whatsapp
                         });
+                        trackLead(user.full_name, user.email);
                         action();
                     }
                 } catch (e) {
@@ -97,6 +99,7 @@ export default function ResultsDisplay({ results, cargoAlvo, areaAtuacao }) {
                     email: emailInput,
                     whatsapp: whatsappInput
                 });
+                trackLead(nameInput, emailInput);
             } catch (e) {
                 console.error("Error creating lead", e);
             }
