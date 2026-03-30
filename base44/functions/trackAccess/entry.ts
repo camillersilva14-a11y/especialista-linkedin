@@ -7,24 +7,23 @@ Deno.serve(async (req) => {
         try {
             user = await base44.auth.me();
         } catch (e) {
-            // Ignore auth error for public pages
+            // Ignorar erro de autenticação para visitantes anônimos
         }
 
         const payload = await req.json();
-        const webhookUrl = Deno.env.get("ANALYTICS_WEBHOOK_URL");
         
-        if (!webhookUrl) {
-            console.warn("ANALYTICS_WEBHOOK_URL not set");
-            return Response.json({ success: true });
-        }
+        // URL de destino especificada
+        const webhookUrl = "https://api.base44.com/api/apps/prod/functions/receiveEvent?secret=saude-em-contexto-2026";
 
+        // Formatação do payload padronizada
         const dataToSend = {
-            type: "app_access",
-            pageName: payload.pageName,
-            path: payload.path,
-            user_id: user ? user.id : "anonymous",
-            user_email: user ? user.email : null,
-            timestamp: new Date().toISOString()
+            app_name: "Especialista LinkedIn",
+            event_type: "access",
+            user_name: user?.full_name || "Visitante Anônimo",
+            user_email: user?.email || "N/A",
+            source: payload.path || "/", // Passa a rota que foi acessada
+            event_name: "page_view",
+            page_name: payload.pageName || "Home" // Dado extra para você saber qual página exata
         };
 
         const response = await fetch(webhookUrl, {
