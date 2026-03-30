@@ -36,6 +36,16 @@ export default function NavigationTracker() {
                 // Silently fail - logging shouldn't break the app
             });
         }
+
+        // Track access via webhook
+        if (pageName || pathname === '/') {
+            base44.functions.invoke('trackAccess', { 
+                pageName: pageName || 'Home',
+                path: pathname 
+            }).catch(() => {
+                // Silently fail
+            });
+        }
     }, [location, isAuthenticated, Pages, mainPageKey]);
 
     return null;
