@@ -1,0 +1,13 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "whatsapp": {
+      "type": "string",
+      "description": "User's WhatsApp number"
+    }
+  },
+  "required": [
+    "whatsapp"
+  ]
+}

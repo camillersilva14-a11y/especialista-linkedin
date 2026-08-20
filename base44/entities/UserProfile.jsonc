@@ -1,0 +1,88 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the user"
+    },
+    "preferences": {
+      "type": "object",
+      "properties": {
+        "learning_style": {
+          "type": "string",
+          "enum": [
+            "visual",
+            "auditory",
+            "kinesthetic",
+            "reading"
+          ],
+          "description": "Preferred learning style"
+        },
+        "experience_level": {
+          "type": "string",
+          "enum": [
+            "beginner",
+            "intermediate",
+            "advanced"
+          ],
+          "description": "User's experience level"
+        },
+        "goals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "User's primary goals"
+        },
+        "interests": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "User's interests and topics of focus"
+        },
+        "preferred_pace": {
+          "type": "string",
+          "enum": [
+            "slow",
+            "moderate",
+            "fast"
+          ],
+          "description": "Preferred learning pace"
+        }
+      }
+    },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "current_step": {
+      "type": "number",
+      "default": 1
+    },
+    "total_score": {
+      "type": "number",
+      "default": 0
+    },
+    "streak_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_activity_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "rls": {
+    "read": {
+      "user_id": "{{user.id}}"
+    },
+    "write": {
+      "user_id": "{{user.id}}"
+    }
+  }
+}

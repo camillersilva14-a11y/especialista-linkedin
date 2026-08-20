@@ -1,0 +1,21 @@
+{
+  "name": "AppFeedback",
+  "type": "object",
+  "properties": {
+    "rating": {
+      "type": "number"
+    },
+    "comments": {
+      "type": "string"
+    },
+    "cargo_alvo": {
+      "type": "string"
+    },
+    "area_atuacao": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "rating"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "name": "PageView",
+  "type": "object",
+  "properties": {
+    "referrer": {
+      "type": "string",
+      "description": "URL completa de origem do visitante"
+    },
+    "referrer_source": {
+      "type": "string",
+      "description": "Canal de origem classificado (Instagram, Google, LinkedIn, Facebook, Direto, Outro)"
+    },
+    "device_type": {
+      "type": "string",
+      "enum": [
+        "mobile",
+        "desktop",
+        "tablet"
+      ],
+      "description": "Tipo de dispositivo do visitante"
+    },
+    "page": {
+      "type": "string",
+      "description": "P\u00e1gina ou rota acessada"
+    },
+    "utm_source": {
+      "type": "string",
+      "description": "Par\u00e2metro UTM source (ex: instagram, google)"
+    },
+    "utm_medium": {
+      "type": "string",
+      "description": "Par\u00e2metro UTM medium (ex: social, cpc, email)"
+    },
+    "utm_campaign": {
+      "type": "string",
+      "description": "Par\u00e2metro UTM campaign"
+    },
+    "utm_content": {
+      "type": "string",
+      "description": "Par\u00e2metro UTM content"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "ID \u00fanico da sess\u00e3o do visitante"
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
